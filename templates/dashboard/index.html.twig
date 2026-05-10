@@ -1,0 +1,229 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}My Dashboard — ClubHub{% endblock %}
+
+{% block stylesheets %}
+<style>
+    /* ── Dashboard Layout ─────────────────────────────── */
+    .dash-header {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 2rem 2.5rem;
+        margin-bottom: 2rem;
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+    }
+    .dash-avatar {
+        width: 64px; height: 64px;
+        border-radius: 50%;
+        background: var(--accent-soft);
+        border: 2px solid rgba(200,169,110,.35);
+        display: flex; align-items: center; justify-content: center;
+        font-family: 'Playfair Display', serif;
+        font-size: 1.6rem;
+        color: var(--accent);
+        flex-shrink: 0;
+    }
+    .dash-info h2 { font-size: 1.4rem; color: var(--text); margin-bottom: .2rem; }
+    .dash-info p  { font-size: .87rem; color: var(--muted); }
+    .role-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: .4rem;
+        background: var(--accent-soft);
+        border: 1px solid rgba(200,169,110,.3);
+        color: var(--accent);
+        font-size: .75rem;
+        font-weight: 600;
+        letter-spacing: .06em;
+        text-transform: uppercase;
+        padding: .25rem .7rem;
+        border-radius: 20px;
+        margin-top: .4rem;
+    }
+
+    /* ── Stats strip ──────────────────────────────────── */
+    .stats-strip {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+    .stat-box {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 1.25rem 1.5rem;
+        display: flex;
+        flex-direction: column;
+        gap: .3rem;
+    }
+    .stat-box .stat-icon {
+        font-size: 1.4rem;
+        color: var(--accent);
+        margin-bottom: .2rem;
+    }
+    .stat-box .stat-num {
+        font-family: 'Playfair Display', serif;
+        font-size: 1.9rem;
+        color: var(--text);
+        line-height: 1;
+    }
+    .stat-box .stat-lbl {
+        font-size: .8rem;
+        color: var(--muted);
+    }
+
+    /* ── Participation table ──────────────────────────── */
+    .section-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        overflow: hidden;
+    }
+    .section-card-header {
+        padding: 1.25rem 1.75rem;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    .section-card-header h3 {
+        font-size: 1.05rem;
+        color: var(--text);
+        margin: 0;
+    }
+
+    .part-row {
+        display: flex;
+        align-items: center;
+        gap: 1.2rem;
+        padding: 1rem 1.75rem;
+        border-bottom: 1px solid var(--border);
+        transition: background .18s;
+    }
+    .part-row:last-child { border-bottom: none; }
+    .part-row:hover { background: var(--surface-2); }
+
+    .part-icon {
+        width: 40px; height: 40px;
+        border-radius: 10px;
+        background: var(--accent-soft);
+        border: 1px solid rgba(200,169,110,.2);
+        display: flex; align-items: center; justify-content: center;
+        color: var(--accent);
+        font-size: 1.1rem;
+        flex-shrink: 0;
+    }
+    .part-info { flex: 1; min-width: 0; }
+    .part-info strong {
+        display: block;
+        color: var(--text);
+        font-size: .93rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .part-info span {
+        font-size: .8rem;
+        color: var(--muted);
+    }
+    .part-date {
+        font-size: .78rem;
+        color: var(--muted);
+        white-space: nowrap;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 3rem 2rem;
+        color: var(--muted);
+    }
+    .empty-state i { font-size: 2.5rem; color: var(--border); margin-bottom: 1rem; display: block; }
+    .empty-state p { font-size: .9rem; }
+</style>
+{% endblock %}
+
+{% block body %}
+
+{# ── Profile header ───────────────────────────────────────────────────── #}
+<div class="dash-header fade-up">
+    <div class="dash-avatar">
+        {{ user.nom|first|upper }}
+    </div>
+    <div class="dash-info">
+        <h2>{{ user.nom }}</h2>
+        <p>{{ user.email }}</p>
+        <span class="role-badge">
+            {% if 'ROLE_PRESIDENT' in user.roles %}
+                <i class="bi bi-crown-fill"></i> Club President
+            {% else %}
+                <i class="bi bi-mortarboard-fill"></i> Étudiant
+            {% endif %}
+        </span>
+    </div>
+</div>
+
+{# ── Stats ─────────────────────────────────────────────────────────────── #}
+<div class="stats-strip fade-up fade-up-d1">
+    <div class="stat-box">
+        <i class="bi bi-calendar-check stat-icon"></i>
+        <span class="stat-num">{{ participations|length }}</span>
+        <span class="stat-lbl">Events Joined</span>
+    </div>
+    <div class="stat-box">
+        <i class="bi bi-clock-history stat-icon"></i>
+        <span class="stat-num">
+            {{ participations|filter(p => p.event.date is defined and p.event.date > date())|length }}
+        </span>
+        <span class="stat-lbl">Upcoming</span>
+    </div>
+    <div class="stat-box">
+        <i class="bi bi-person-badge stat-icon"></i>
+        <span class="stat-num">
+            {% if 'ROLE_PRESIDENT' in user.roles %}P{% else %}E{% endif %}
+        </span>
+        <span class="stat-lbl">Role</span>
+    </div>
+</div>
+
+{# ── My Participations ─────────────────────────────────────────────────── #}
+<div class="section-card fade-up fade-up-d2">
+    <div class="section-card-header">
+        <h3><i class="bi bi-calendar3 me-2 text-accent"></i>My Event Registrations</h3>
+        <a href="{{ path('event_index') }}" class="btn-gold" style="font-size:.8rem;padding:.4rem 1rem;">
+            Browse Events
+        </a>
+    </div>
+
+    {% if participations is empty %}
+        <div class="empty-state">
+            <i class="bi bi-calendar-x"></i>
+            <p>You haven't registered for any events yet.</p>
+            <a href="{{ path('event_index') }}" class="btn-gold mt-3" style="display:inline-block;padding:.55rem 1.4rem;font-size:.85rem;">
+                Discover Events
+            </a>
+        </div>
+    {% else %}
+        {% for p in participations %}
+        <div class="part-row">
+            <div class="part-icon"><i class="bi bi-calendar-event"></i></div>
+            <div class="part-info">
+                <strong>{{ p.event.name }}</strong>
+                <span>{{ p.event.location ?? 'Location TBD' }}</span>
+            </div>
+            <div class="part-date">
+                <i class="bi bi-clock me-1"></i>
+                Registered {{ p.registeredAt|date('d M Y') }}
+            </div>
+            <a href="{{ path('event_show', {id: p.event.id}) }}" class="btn-muted" style="font-size:.78rem;padding:.35rem .85rem;white-space:nowrap;">
+                View
+            </a>
+        </div>
+        {% endfor %}
+    {% endif %}
+</div>
+
+{% endblock %}
