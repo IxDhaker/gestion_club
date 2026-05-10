@@ -1,0 +1,98 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ club.name }} — ClubHub{% endblock %}
+
+{% block body %}
+
+{# ── Breadcrumb ──────────────────────────────────────────────────────────── #}
+<nav class="mb-4 fade-up" style="font-size:.82rem;color:var(--muted)">
+    <a href="{{ path('club_index') }}" class="text-accent">Clubs</a>
+    <i class="bi bi-chevron-right mx-1" style="font-size:.7rem"></i>
+    <span>{{ club.name }}</span>
+</nav>
+
+{# ── Hero card ───────────────────────────────────────────────────────────── #}
+<div class="detail-hero fade-up fade-up-d1">
+    <div class="d-flex flex-wrap align-items-start justify-content-between gap-3">
+        <div>
+            <span class="card-tag mb-3 d-inline-block">
+                <i class="bi bi-people-fill me-1"></i>Club
+            </span>
+            <h1 class="section-title mb-2">{{ club.name }}</h1>
+            <div class="d-flex flex-wrap gap-2 mt-3">
+                <span class="stat-chip">
+                    <i class="bi bi-people"></i>
+                    {{ club.clubMembers|length }} Member{{ club.clubMembers|length != 1 ? 's' }}
+                </span>
+                {% if club.createdAt is defined and club.createdAt %}
+                <span class="stat-chip">
+                    <i class="bi bi-calendar3"></i>
+                    Founded {{ club.createdAt|date('F Y') }}
+                </span>
+                {% endif %}
+            </div>
+        </div>
+
+        {# ── Join button ──────────────────────────────────────────────────── #}
+        <div>
+            {% if is_granted('ROLE_USER') %}
+                {% if isMember %}
+                    <button class="btn-muted" disabled>
+                        <i class="bi bi-check-circle-fill me-1"></i>Already a Member
+                    </button>
+                {% else %}
+                    <form method="post" action="{{ path('club_join', {id: club.id}) }}">
+                        <input type="hidden" name="_token" value="{{ csrf_token('join_club_' ~ club.id) }}">
+                        <button type="submit" class="btn-gold">
+                            <i class="bi bi-plus-circle me-1"></i>Join Club
+                        </button>
+                    </form>
+                {% endif %}
+            {% else %}
+                <a href="{{ path('app_login') }}" class="btn-outline-gold">
+                    <i class="bi bi-lock me-1"></i>Sign in to Join
+                </a>
+            {% endif %}
+        </div>
+    </div>
+
+    {# Description #}
+    {% if club.description %}
+    <hr style="border-color:var(--border);margin:1.75rem 0">
+    <p style="color:var(--text);line-height:1.8;font-size:.96rem;">{{ club.description }}</p>
+    {% endif %}
+</div>
+
+{# ── Members section ─────────────────────────────────────────────────────── #}
+<div class="fade-up fade-up-d2">
+    <p class="section-eyebrow mt-2"><i class="bi bi-people me-1"></i>Members</p>
+    <h2 style="font-size:1.4rem;color:var(--text);margin-bottom:1rem;">
+        {{ club.clubMembers|length }} Member{{ club.clubMembers|length != 1 ? 's' }}
+    </h2>
+
+    {% if club.clubMembers is empty %}
+    <p class="section-sub">No members yet — be the first to join!</p>
+    {% else %}
+    <div class="d-flex flex-column gap-2">
+        {% for member in club.clubMembers %}
+        <div class="member-row">
+            <div class="avatar-circle">
+                {{ member.user.firstName|first|upper }}{{ member.user.lastName|first|upper }}
+            </div>
+            <div>
+                <div style="font-weight:500;color:var(--text);font-size:.92rem;">
+                    {{ member.user.firstName }} {{ member.user.lastName }}
+                </div>
+                {% if member.joinedAt is defined and member.joinedAt %}
+                <div style="font-size:.78rem;color:var(--muted)">
+                    Joined {{ member.joinedAt|date('d M Y') }}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+
+{% endblock %}

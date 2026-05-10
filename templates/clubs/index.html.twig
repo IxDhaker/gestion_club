@@ -1,0 +1,59 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Clubs — ClubHub{% endblock %}
+
+{% block body %}
+{# ── Page header ─────────────────────────────────────────────────────────── #}
+<div class="fade-up mb-5">
+    <p class="section-eyebrow"><i class="bi bi-collection me-1"></i>Explore</p>
+    <h1 class="section-title">All Clubs</h1>
+    <div class="title-divider"></div>
+    <p class="section-sub">Discover student clubs and join the ones that match your passion.</p>
+</div>
+
+{% if clubs is empty %}
+<div class="text-center py-5 fade-up">
+    <i class="bi bi-journal-x" style="font-size:3rem;color:var(--muted)"></i>
+    <p class="mt-3 section-sub">No clubs available yet. Check back soon!</p>
+</div>
+{% else %}
+<div class="row g-4">
+    {% for club in clubs %}
+    <div class="col-12 col-sm-6 col-lg-4 fade-up" style="animation-delay:{{ loop.index0 * 0.07 }}s">
+        <div class="club-card">
+            <div class="card-accent-bar"></div>
+            <div class="card-body-inner d-flex flex-column h-100">
+
+                {# Icon placeholder / category tag #}
+                <span class="card-tag">
+                    <i class="bi bi-people-fill me-1"></i>Club
+                </span>
+
+                <h3 class="card-title-text">{{ club.name }}</h3>
+
+                <p class="card-desc flex-grow-1">
+                    {{ club.description|default('No description available.')|truncate(120) }}
+                </p>
+
+                {# Meta info #}
+                <div class="card-meta">
+                    <span><i class="bi bi-people"></i> {{ club.clubMembers|length }} member{{ club.clubMembers|length != 1 ? 's' }}</span>
+                    {% if club.createdAt is defined and club.createdAt %}
+                    <span><i class="bi bi-calendar3"></i> {{ club.createdAt|date('M Y') }}</span>
+                    {% endif %}
+                </div>
+
+                {# CTA #}
+                <div class="mt-3 d-flex gap-2">
+                    <a href="{{ path('club_show', {id: club.id}) }}" class="btn-gold">
+                        View Club
+                    </a>
+                </div>
+
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+{% endblock %}

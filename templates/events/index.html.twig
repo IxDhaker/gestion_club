@@ -1,0 +1,70 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Events — ClubHub{% endblock %}
+
+{% block body %}
+
+{# ── Page header ─────────────────────────────────────────────────────────── #}
+<div class="fade-up mb-5">
+    <p class="section-eyebrow"><i class="bi bi-calendar3 me-1"></i>Upcoming</p>
+    <h1 class="section-title">Events</h1>
+    <div class="title-divider"></div>
+    <p class="section-sub">Register for events and be part of what's happening on campus.</p>
+</div>
+
+{% if events is empty %}
+<div class="text-center py-5 fade-up">
+    <i class="bi bi-calendar-x" style="font-size:3rem;color:var(--muted)"></i>
+    <p class="mt-3 section-sub">No events scheduled yet. Stay tuned!</p>
+</div>
+{% else %}
+<div class="row g-4">
+    {% for event in events %}
+    <div class="col-12 col-md-6 col-xl-4 fade-up" style="animation-delay:{{ loop.index0 * 0.07 }}s">
+        <div class="event-card">
+            <div class="card-accent-bar" style="background:linear-gradient(90deg,#6ea8c8,#7ec8e8,#6ea8c8)"></div>
+            <div class="card-body-inner d-flex flex-column">
+
+                {# Date badge #}
+                <span class="card-tag" style="background:rgba(110,168,200,.15);color:#6ea8c8;">
+                    <i class="bi bi-calendar-event me-1"></i>
+                    {% if event.date is defined and event.date %}
+                        {{ event.date|date('d M Y') }}
+                    {% else %}
+                        TBA
+                    {% endif %}
+                </span>
+
+                <h3 class="card-title-text">{{ event.title }}</h3>
+
+                <p class="card-desc flex-grow-1">
+                    {{ event.description|default('No description available.')|truncate(110) }}
+                </p>
+
+                {# Meta #}
+                <div class="card-meta">
+                    {% if event.location is defined and event.location %}
+                    <span><i class="bi bi-geo-alt" style="color:#6ea8c8"></i> {{ event.location }}</span>
+                    {% endif %}
+                    {% if event.maxParticipants is defined and event.maxParticipants %}
+                    <span>
+                        <i class="bi bi-people" style="color:#6ea8c8"></i>
+                        {{ event.maxParticipants }} places
+                    </span>
+                    {% endif %}
+                </div>
+
+                <div class="mt-3 d-flex gap-2">
+                    <a href="{{ path('event_show', {id: event.id}) }}" class="btn-gold">
+                        View Event
+                    </a>
+                </div>
+
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+{% endblock %}
