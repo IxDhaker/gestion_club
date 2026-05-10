@@ -1,0 +1,41 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Recruitment index{% endblock %}
+
+{% block body %}
+    <h1>Recruitment index</h1>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Titre</th>
+                <th>Description</th>
+                <th>DateLimite</th>
+                <th>Status</th>
+                <th>actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for recruitment in recruitments %}
+            <tr>
+                <td>{{ recruitment.id }}</td>
+                <td>{{ recruitment.titre }}</td>
+                <td>{{ recruitment.description }}</td>
+                <td>{{ recruitment.dateLimite ? recruitment.dateLimite|date('Y-m-d H:i:s') : '' }}</td>
+                <td>{{ recruitment.status }}</td>
+                <td>
+                    <a href="{{ path('app_recruitment_show', {'id': recruitment.id}) }}">show</a>
+                    <a href="{{ path('app_recruitment_edit', {'id': recruitment.id}) }}">edit</a>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="6">no records found</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_recruitment_new') }}">Create new</a>
+{% endblock %}
