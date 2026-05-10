@@ -21,7 +21,7 @@ class EventController extends AbstractController
     #[Route('', name: 'event_index', methods: ['GET'])]
     public function index(): Response
     {
-        $events = $this->eventRepository->findBy([], ['date' => 'ASC']);
+       $events = $this->eventRepository->findBy([], ['dateEvent' => 'ASC']);
 
         $participatingIn = [];
         if ($this->getUser()) {

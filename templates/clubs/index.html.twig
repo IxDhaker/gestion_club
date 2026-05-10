@@ -32,7 +32,7 @@
                 <h3 class="card-title-text">{{ club.name }}</h3>
 
                 <p class="card-desc flex-grow-1">
-                    {{ club.description|default('No description available.')|truncate(120) }}
+                    {{ club.description|default('No description available.')|slice(0, 120) ~ '...' }}
                 </p>
 
                 {# Meta info #}

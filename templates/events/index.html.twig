@@ -38,7 +38,7 @@
                 <h3 class="card-title-text">{{ event.title }}</h3>
 
                 <p class="card-desc flex-grow-1">
-                    {{ event.description|default('No description available.')|truncate(110) }}
+                    {{ event.description|default('No description available.')|u.truncate(110, '...') }}
                 </p>
 
                 {# Meta #}
