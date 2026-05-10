@@ -1,0 +1,305 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Create Account — ClubHub{% endblock %}
+
+{% block stylesheets %}
+<style>
+    .auth-wrapper {
+        min-height: calc(100vh - 80px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 1rem;
+    }
+
+    .auth-card {
+        width: 100%;
+        max-width: 480px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        padding: 2.8rem 2.5rem;
+        box-shadow: 0 24px 64px rgba(0,0,0,.55);
+        animation: fadeUp .5s ease both;
+    }
+
+    .auth-logo {
+        text-align: center;
+        margin-bottom: 1.8rem;
+    }
+    .auth-logo .logo-icon {
+        width: 56px; height: 56px;
+        background: var(--accent-soft);
+        border: 1px solid rgba(200,169,110,.3);
+        border-radius: 16px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.6rem;
+        color: var(--accent);
+        margin-bottom: 1rem;
+    }
+    .auth-logo h1 { font-size: 1.55rem; color: var(--text); margin-bottom: .3rem; }
+    .auth-logo p  { font-size: .87rem; color: var(--muted); }
+
+    /* Fields */
+    .field-group { margin-bottom: 1.15rem; }
+    .field-group label {
+        display: block;
+        font-size: .8rem;
+        font-weight: 600;
+        letter-spacing: .05em;
+        color: var(--muted);
+        text-transform: uppercase;
+        margin-bottom: .45rem;
+    }
+    .field-group input[type="text"],
+    .field-group input[type="email"],
+    .field-group input[type="password"] {
+        width: 100%;
+        background: var(--surface-2);
+        border: 1px solid var(--border);
+        color: var(--text);
+        border-radius: 10px;
+        padding: .65rem 1rem;
+        font-size: .93rem;
+        font-family: 'DM Sans', sans-serif;
+        transition: border-color .2s, box-shadow .2s;
+        outline: none;
+    }
+    .field-group input[type="text"]:focus,
+    .field-group input[type="email"]:focus,
+    .field-group input[type="password"]:focus {
+        border-color: rgba(200,169,110,.5);
+        box-shadow: 0 0 0 3px rgba(200,169,110,.12);
+    }
+    .field-group input::placeholder { color: var(--muted); }
+
+    /* Role cards */
+    .role-label {
+        display: block;
+        font-size: .8rem;
+        font-weight: 600;
+        letter-spacing: .05em;
+        color: var(--muted);
+        text-transform: uppercase;
+        margin-bottom: .6rem;
+    }
+    .role-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: .75rem;
+        margin-bottom: 1.15rem;
+    }
+    .role-option { display: none; }
+    .role-option-label {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: .4rem;
+        padding: 1rem .75rem;
+        background: var(--surface-2);
+        border: 1.5px solid var(--border);
+        border-radius: 12px;
+        cursor: pointer;
+        transition: border-color .2s, background .2s, box-shadow .2s;
+        text-align: center;
+    }
+    .role-option-label .role-emoji { font-size: 1.6rem; }
+    .role-option-label .role-title {
+        font-size: .85rem;
+        font-weight: 600;
+        color: var(--text);
+    }
+    .role-option-label .role-sub {
+        font-size: .75rem;
+        color: var(--muted);
+    }
+    .role-option:checked + .role-option-label {
+        border-color: var(--accent);
+        background: var(--accent-soft);
+        box-shadow: 0 0 0 3px rgba(200,169,110,.12);
+    }
+    .role-option-label:hover {
+        border-color: rgba(200,169,110,.35);
+    }
+
+    /* Terms */
+    .terms-row {
+        display: flex;
+        align-items: center;
+        gap: .65rem;
+        margin: 1rem 0 1.2rem;
+    }
+    .terms-row input[type="checkbox"] {
+        width: 17px; height: 17px;
+        accent-color: var(--accent);
+        cursor: pointer;
+        flex-shrink: 0;
+    }
+    .terms-row label {
+        font-size: .85rem;
+        color: var(--muted);
+        cursor: pointer;
+    }
+    .terms-row label a { color: var(--accent); text-decoration: underline; text-underline-offset: 2px; }
+
+    /* Submit */
+    .btn-auth {
+        width: 100%;
+        padding: .75rem;
+        background: linear-gradient(135deg, var(--accent), #e8c97e);
+        color: #0f0f13;
+        font-weight: 700;
+        font-size: .95rem;
+        letter-spacing: .04em;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: opacity .2s, transform .15s, box-shadow .2s;
+    }
+    .btn-auth:hover {
+        opacity: .9;
+        transform: translateY(-1px);
+        box-shadow: 0 6px 24px var(--accent-glow);
+    }
+
+    /* Errors */
+    .field-error {
+        font-size: .8rem;
+        color: var(--danger);
+        margin-top: .3rem;
+        display: flex;
+        align-items: center;
+        gap: .35rem;
+    }
+    .input-invalid {
+        border-color: rgba(224,90,90,.5) !important;
+        box-shadow: 0 0 0 3px rgba(224,90,90,.1) !important;
+    }
+
+    .auth-divider {
+        text-align: center;
+        margin-top: 1.5rem;
+        font-size: .85rem;
+        color: var(--muted);
+    }
+    .auth-divider a { color: var(--accent); font-weight: 600; }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="auth-wrapper">
+    <div class="auth-card">
+
+        <div class="auth-logo">
+            <div class="logo-icon"><i class="bi bi-person-plus-fill"></i></div>
+            <h1>Create Account</h1>
+            <p>Join ClubHub and discover your community</p>
+        </div>
+
+        {# Global errors #}
+        {% if registrationForm.vars.errors|length > 0 %}
+        <div class="field-error mb-3" style="font-size:.85rem;">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+            Please fix the errors below.
+        </div>
+        {% endif %}
+
+        {{ form_start(registrationForm, {'attr': {'novalidate': 'novalidate', 'class': ''}}) }}
+
+            {# Username #}
+            <div class="field-group">
+                {{ form_label(registrationForm.nom) }}
+                {{ form_widget(registrationForm.nom, {
+                    'attr': {'class': registrationForm.nom.vars.valid is same as false ? 'input-invalid' : ''}
+                }) }}
+                {% for error in registrationForm.nom.vars.errors %}
+                    <div class="field-error"><i class="bi bi-exclamation-circle"></i>{{ error.message }}</div>
+                {% endfor %}
+            </div>
+
+            {# Email #}
+            <div class="field-group">
+                {{ form_label(registrationForm.email) }}
+                {{ form_widget(registrationForm.email, {
+                    'attr': {'class': registrationForm.email.vars.valid is same as false ? 'input-invalid' : ''}
+                }) }}
+                {% for error in registrationForm.email.vars.errors %}
+                    <div class="field-error"><i class="bi bi-exclamation-circle"></i>{{ error.message }}</div>
+                {% endfor %}
+            </div>
+
+            {# Role — custom card UI #}
+            <div class="mb-3">
+                <span class="role-label">I am a</span>
+                <div class="role-grid">
+                    {# Étudiant #}
+                    <div>
+                        <input type="radio"
+                               class="role-option"
+                               id="role_etudiant"
+                               name="{{ registrationForm.role.vars.full_name }}"
+                               value="{{ constant('App\\Entity\\User::ROLE_ETUDIANT') }}">
+                        <label class="role-option-label" for="role_etudiant">
+                            <span class="role-emoji">🎓</span>
+                            <span class="role-title">Étudiant</span>
+                            <span class="role-sub">Student member</span>
+                        </label>
+                    </div>
+                    {# Président #}
+                    <div>
+                        <input type="radio"
+                               class="role-option"
+                               id="role_president"
+                               name="{{ registrationForm.role.vars.full_name }}"
+                               value="{{ constant('App\\Entity\\User::ROLE_PRESIDENT') }}">
+                        <label class="role-option-label" for="role_president">
+                            <span class="role-emoji">👑</span>
+                            <span class="role-title">Président</span>
+                            <span class="role-sub">Club president</span>
+                        </label>
+                    </div>
+                </div>
+                {% for error in registrationForm.role.vars.errors %}
+                    <div class="field-error"><i class="bi bi-exclamation-circle"></i>{{ error.message }}</div>
+                {% endfor %}
+            </div>
+
+            {# Password #}
+            <div class="field-group">
+                {{ form_label(registrationForm.plainPassword, 'Password') }}
+                {{ form_widget(registrationForm.plainPassword, {
+                    'attr': {'class': registrationForm.plainPassword.vars.valid is same as false ? 'input-invalid' : ''}
+                }) }}
+                {% for error in registrationForm.plainPassword.vars.errors %}
+                    <div class="field-error"><i class="bi bi-exclamation-circle"></i>{{ error.message }}</div>
+                {% endfor %}
+            </div>
+
+            {# Terms #}
+            <div class="terms-row">
+                {{ form_widget(registrationForm.agreeTerms) }}
+                <label for="{{ registrationForm.agreeTerms.vars.id }}">
+                    I agree to the <a href="#">Terms of Service</a>
+                </label>
+            </div>
+            {% for error in registrationForm.agreeTerms.vars.errors %}
+                <div class="field-error mb-2"><i class="bi bi-exclamation-circle"></i>{{ error.message }}</div>
+            {% endfor %}
+
+            <button type="submit" class="btn-auth">
+                <i class="bi bi-rocket-takeoff me-2"></i>Create My Account
+            </button>
+
+        {{ form_end(registrationForm) }}
+
+        <div class="auth-divider">
+            Already have an account?
+            <a href="{{ path('app_login') }}">Sign in</a>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

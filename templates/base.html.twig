@@ -348,8 +348,11 @@
         Sign out
     </a>
     {% else %}
-    <a href="#" class="btn-gold ms-2">
-        Sign in
+    <a href="{{ path('app_login') }}" class="btn-outline-gold ms-2">
+        <i class="bi bi-box-arrow-in-right me-1"></i>Sign in
+    </a>
+    <a href="{{ path('app_register') }}" class="btn-gold ms-2">
+        <i class="bi bi-person-plus me-1"></i>Register
     </a>
     {% endif %}
 </div>
