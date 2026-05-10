@@ -5,12 +5,14 @@
 {% block body %}
 <div class="container mt-5 mb-5">
 
+    {# Fil d'ariane #}
     <nav class="mb-4" style="font-size:.82rem; color:#888;">
-        <a href="{{ path('club_index') }}" style="color:#4f46e5;">Clubs</a>
+        <a href="{{ path('club_index') }}" style="color:#4f46e5; text-decoration:none;">Clubs</a>
         <i class="bi bi-chevron-right mx-1" style="font-size:.7rem"></i>
         <span>{{ club.name }}</span>
     </nav>
 
+    {# Carte de présentation du Club #}
     <div style="background:white; border-radius:16px; padding:2.5rem; box-shadow:0 2px 12px rgba(0,0,0,0.07); margin-bottom:2rem;">
         <div class="d-flex flex-wrap align-items-start justify-content-between gap-3">
             <div>
@@ -25,7 +27,17 @@
                     </span>
                 </div>
             </div>
-            <div>
+            
+            <div class="d-flex gap-2">
+                {# Actions Administrateur : Nouveau Club #}
+                {% if is_granted('ROLE_ADMIN') %}
+                    <a href="{{ path('club_new') }}" 
+                       style="background:#22c55e; color:white; border:none; border-radius:8px; padding:8px 20px; font-weight:600; text-decoration:none; display:inline-block;">
+                        <i class="bi bi-plus-circle me-1"></i>Ajouter Club
+                    </a>
+                {% endif %}
+
+                {# Actions Utilisateur : Rejoindre #}
                 {% if is_granted('ROLE_USER') %}
                     {% if isMember %}
                         <button style="background:#f4f6fb; color:#888; border:1px solid #e5e7eb; border-radius:8px; padding:8px 20px; font-weight:600;" disabled>
@@ -40,7 +52,7 @@
                         </form>
                     {% endif %}
                 {% else %}
-                    <a href="#" style="background:transparent; color:#4f46e5; border:1px solid #4f46e5; border-radius:8px; padding:8px 20px; font-weight:600; display:inline-block;">
+                    <a href="{{ path('app_login') }}" style="background:transparent; color:#4f46e5; border:1px solid #4f46e5; border-radius:8px; padding:8px 20px; font-weight:600; display:inline-block; text-decoration:none;">
                         <i class="bi bi-lock me-1"></i>Connectez-vous pour rejoindre
                     </a>
                 {% endif %}
@@ -48,38 +60,56 @@
         </div>
 
         {% if club.description %}
-        <hr style="border-color:#f4f6fb; margin:1.75rem 0;">
-        <p style="color:#555; line-height:1.8; font-size:.96rem;">{{ club.description }}</p>
+            <hr style="border-color:#f4f6fb; margin:1.75rem 0;">
+            <p style="color:#555; line-height:1.8; font-size:.96rem; margin-bottom: 2rem;">{{ club.description }}</p>
+        {% endif %}
+
+        {# NOUVEAU : Actions de gestion pour l'admin (Modifier/Supprimer) #}
+        {% if is_granted('ROLE_ADMIN') %}
+            <div class="d-flex gap-3 pt-3" style="border-top: 1px solid #f4f6fb;">
+                <a href="{{ path('club_edit', {'id': club.id}) }}" 
+                   class="btn" style="background:#4f46e5; color:white; border-radius:8px; padding:8px 20px; font-weight:600; font-size: 0.9rem;">
+                    <i class="bi bi-pencil-square me-1"></i>Modifier le Club
+                </a>
+                
+                {# Assurez-vous que le fichier _delete_form.html.twig existe pour Club #}
+                {{ include('club/_delete_form.html.twig') }}
+            </div>
         {% endif %}
     </div>
 
-    <div>
-        <h2 style="font-weight:700; color:#1a1a2e; font-size:1.4rem; margin-bottom:1rem;">
+    {# Liste des Membres #}
+    <div class="mt-5">
+        <h2 style="font-weight:700; color:#1a1a2e; font-size:1.4rem; margin-bottom:1.5rem;">
             {{ club.clubMembers|length }} Membre{{ club.clubMembers|length != 1 ? 's' }}
         </h2>
+
         {% if club.clubMembers is empty %}
-        <p style="color:#888;">Aucun membre pour le moment.</p>
-        {% else %}
-        <div class="d-flex flex-column gap-2">
-            {% for member in club.clubMembers %}
-            <div style="display:flex; align-items:center; gap:1rem; padding:0.85rem 1.1rem; border-radius:10px; background:white; border:1px solid #e5e7eb; box-shadow:0 1px 4px rgba(0,0,0,0.04);">
-                <div style="width:40px; height:40px; border-radius:50%; background:#ede9fe; border:1px solid #c4b5fd; display:flex; align-items:center; justify-content:center; font-weight:700; color:#4f46e5; flex-shrink:0;">
-                    {{ member.user.firstName|first|upper }}{{ member.user.lastName|first|upper }}
-                </div>
-                <div>
-                    <div style="font-weight:600; color:#1a1a2e; font-size:.92rem;">
-                        {{ member.user.firstName }} {{ member.user.lastName }}
-                    </div>
-                    {% if member.joinedAt is defined and member.joinedAt %}
-                    <div style="font-size:.78rem; color:#888;">
-                        Rejoint le {{ member.joinedAt|date('d M Y') }}
-                    </div>
-                    {% endif %}
-                </div>
+            <div style="background:#f9fafb; border: 2px dashed #e5e7eb; border-radius:12px; padding:2rem; text-align:center; color:#888;">
+                Aucun membre pour le moment. Soyez le premier à rejoindre !
             </div>
-            {% endfor %}
-        </div>
+        {% else %}
+            <div class="d-flex flex-column gap-2">
+                {% for member in club.clubMembers %}
+                    <div style="display:flex; align-items:center; gap:1rem; padding:0.85rem 1.1rem; border-radius:10px; background:white; border:1px solid #e5e7eb; box-shadow:0 1px 4px rgba(0,0,0,0.04);">
+                        <div style="width:40px; height:40px; border-radius:50%; background:#ede9fe; border:1px solid #c4b5fd; display:flex; align-items:center; justify-content:center; font-weight:700; color:#4f46e5; flex-shrink:0;">
+                            {{ member.user.firstName|first|upper }}{{ member.user.lastName|first|upper }}
+                        </div>
+                        <div>
+                            <div style="font-weight:600; color:#1a1a2e; font-size:.92rem;">
+                                {{ member.user.firstName }} {{ member.user.lastName }}
+                            </div>
+                            {% if member.joinedAt is defined and member.joinedAt %}
+                                <div style="font-size:.78rem; color:#888;">
+                                    Rejoint le {{ member.joinedAt|date('d M Y') }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
         {% endif %}
+        
     </div>
 
 </div>

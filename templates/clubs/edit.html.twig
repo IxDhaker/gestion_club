@@ -1,0 +1,175 @@
+{% extends 'base.html.twig' %}
+{% block title %}Modifier {{ club.name }} — ClubHub{% endblock %}
+
+{% block body %}
+
+{# Breadcrumb #}
+<nav class="mb-4 fade-up" style="font-size:.82rem;color:var(--muted)">
+    <a href="{{ path('club_index') }}" class="text-accent">Clubs</a>
+    <i class="bi bi-chevron-right mx-1" style="font-size:.7rem"></i>
+    <a href="{{ path('club_show', {id: club.id}) }}" class="text-accent">{{ club.name }}</a>
+    <i class="bi bi-chevron-right mx-1" style="font-size:.7rem"></i>
+    <span>Modifier</span>
+</nav>
+
+<div class="row justify-content-center">
+<div class="col-12 col-lg-7">
+
+    <div class="fade-up mb-4">
+        <p class="section-eyebrow"><i class="bi bi-pencil me-1"></i>Édition</p>
+        <h1 class="section-title">Modifier le club</h1>
+        <div class="title-divider"></div>
+    </div>
+
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden" class="fade-up fade-up-d1">
+        <div class="card-accent-bar"></div>
+        <div style="padding:2rem">
+
+            {{ form_start(clubForm, {
+                'attr': {'novalidate': 'novalidate', 'enctype': 'multipart/form-data'}
+            }) }}
+
+                {# Nom #}
+                <div class="mb-4">
+                    <label class="form-label-custom">Nom du club</label>
+                    {{ form_widget(clubForm.name, {'attr': {'class': 'input-custom'}}) }}
+                    {{ form_errors(clubForm.name) }}
+                </div>
+
+                {# Description #}
+                <div class="mb-4">
+                    <label class="form-label-custom">Description</label>
+                    {{ form_widget(clubForm.description, {'attr': {'class': 'input-custom', 'rows': 5}}) }}
+                    {{ form_errors(clubForm.description) }}
+                </div>
+
+                {# Logo actuel + upload nouveau #}
+                <div class="mb-4">
+                    <label class="form-label-custom">Logo du club</label>
+
+                    {% if club.logo %}
+                    <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1rem;padding:1rem;background:var(--surface-2);border:1px solid var(--border);border-radius:10px">
+                        <img src="{{ asset('uploads/logos/' ~ club.logo) }}"
+                             alt="Logo actuel"
+                             style="height:70px;width:70px;object-fit:contain;border-radius:8px;background:#fff;padding:4px">
+                        <div>
+                            <p style="font-size:.85rem;color:var(--text);margin:0;font-weight:500">Logo actuel</p>
+                            <p style="font-size:.75rem;color:var(--muted);margin:0">{{ club.logo }}</p>
+                            <p style="font-size:.75rem;color:var(--accent);margin:.2rem 0 0">Uploader un nouveau fichier remplacera celui-ci</p>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <div id="drop-zone" onclick="document.getElementById('logo-input').click()">
+                        <i class="bi bi-cloud-arrow-up" style="font-size:2rem;color:var(--accent);display:block;margin-bottom:.5rem"></i>
+                        <p style="color:var(--muted);font-size:.88rem;margin:0">
+                            {% if club.logo %}Remplacer le logo{% else %}Ajouter un logo{% endif %}
+                            — <span class="text-accent" style="cursor:pointer">parcourir</span>
+                        </p>
+                        <p style="color:var(--muted);font-size:.75rem;margin:.3rem 0 0">PNG, JPG, WEBP — max 2 Mo</p>
+                    </div>
+
+                    {{ form_widget(clubForm.logoFile, {'attr': {'id': 'logo-input', 'style': 'display:none', 'accept': 'image/*'}}) }}
+                    {{ form_errors(clubForm.logoFile) }}
+
+                    <div id="logo-preview" style="display:none;margin-top:1rem;text-align:center">
+                        <img id="preview-img" src="" alt="Aperçu"
+                             style="max-height:120px;border-radius:12px;border:1px solid var(--border)">
+                        <p id="preview-name" style="font-size:.78rem;color:var(--muted);margin-top:.4rem"></p>
+                    </div>
+                </div>
+
+                {# Buttons #}
+                <div class="d-flex gap-2 pt-2">
+                    <button type="submit" class="btn-gold">
+                        <i class="bi bi-check-lg me-1"></i>Enregistrer
+                    </button>
+                    <a href="{{ path('club_show', {id: club.id}) }}" class="btn-muted">
+                        Annuler
+                    </a>
+                </div>
+
+            {{ form_end(clubForm) }}
+        </div>
+    </div>
+
+    {# Zone de danger — Supprimer #}
+    <div style="margin-top:2rem;background:rgba(224,90,90,.06);border:1px solid rgba(224,90,90,.2);border-radius:var(--radius);padding:1.5rem" class="fade-up fade-up-d2">
+        <h3 style="font-size:1rem;color:#e05a5a;margin-bottom:.5rem">
+            <i class="bi bi-exclamation-triangle me-1"></i>Zone de danger
+        </h3>
+        <p style="font-size:.85rem;color:var(--muted);margin-bottom:1rem">
+            Cette action est irréversible. Tous les membres et données du club seront supprimés.
+        </p>
+        <form method="post" action="{{ path('club_delete', {id: club.id}) }}"
+              onsubmit="return confirm('Supprimer définitivement ce club ?')">
+            <input type="hidden" name="_token" value="{{ csrf_token('delete_club_' ~ club.id) }}">
+            <button type="submit" style="background:rgba(224,90,90,.15);color:#e05a5a;border:1px solid rgba(224,90,90,.3);padding:.5rem 1.2rem;border-radius:8px;font-size:.85rem;cursor:pointer">
+                <i class="bi bi-trash me-1"></i>Supprimer ce club
+            </button>
+        </form>
+    </div>
+
+</div>
+</div>
+
+{% endblock %}
+
+{% block stylesheets %}
+<style>
+.form-label-custom {
+    display: block; font-size:.8rem; font-weight:600;
+    letter-spacing:.06em; text-transform:uppercase;
+    color: var(--muted); margin-bottom:.4rem;
+}
+.input-custom {
+    width:100%; background:var(--surface-2);
+    border:1px solid var(--border); border-radius:8px;
+    padding:.65rem .9rem; color:var(--text); font-size:.92rem;
+    outline:none; transition:border-color .2s;
+    font-family:inherit; resize:vertical;
+}
+.input-custom:focus { border-color:rgba(200,169,110,.5); }
+#drop-zone {
+    border:2px dashed rgba(200,169,110,.3); border-radius:12px;
+    padding:1.5rem; text-align:center; cursor:pointer;
+    transition:border-color .2s, background .2s; background:var(--surface-2);
+}
+#drop-zone:hover, #drop-zone.drag-over {
+    border-color:var(--accent); background:rgba(200,169,110,.05);
+}
+</style>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+const input    = document.getElementById('logo-input');
+const dropZone = document.getElementById('drop-zone');
+const preview  = document.getElementById('logo-preview');
+const img      = document.getElementById('preview-img');
+const name     = document.getElementById('preview-name');
+
+function showPreview(file) {
+    if (!file || !file.type.startsWith('image/')) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+        img.src = e.target.result;
+        name.textContent = file.name + ' (' + (file.size / 1024).toFixed(0) + ' KB)';
+        preview.style.display = 'block';
+    };
+    reader.readAsDataURL(file);
+}
+
+input.addEventListener('change', () => { if (input.files[0]) showPreview(input.files[0]); });
+dropZone.addEventListener('dragover',  e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+dropZone.addEventListener('dragleave', ()  => dropZone.classList.remove('drag-over'));
+dropZone.addEventListener('drop', e => {
+    e.preventDefault(); dropZone.classList.remove('drag-over');
+    const file = e.dataTransfer.files[0];
+    if (file) {
+        const dt = new DataTransfer(); dt.items.add(file); input.files = dt.files;
+        showPreview(file);
+    }
+});
+</script>
+{% endblock %}
