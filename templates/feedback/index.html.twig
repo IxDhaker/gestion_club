@@ -1,39 +1,68 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Feedback index{% endblock %}
+{% block title %}Feedbacks — ClubHub{% endblock %}
 
 {% block body %}
-    <h1>Feedback index</h1>
+<div class="container mt-5 mb-5">
 
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Id</th>
-                <th>Content</th>
-                <th>Rating</th>
-                <th>CreatedAt</th>
-                <th>actions</th>
-            </tr>
-        </thead>
-        <tbody>
-        {% for feedback in feedback %}
-            <tr>
-                <td>{{ feedback.id }}</td>
-                <td>{{ feedback.content }}</td>
-                <td>{{ feedback.rating }}</td>
-                <td>{{ feedback.createdAt ? feedback.createdAt|date('Y-m-d H:i:s') : '' }}</td>
-                <td>
-                    <a href="{{ path('app_feedback_show', {'id': feedback.id}) }}">show</a>
-                    <a href="{{ path('app_feedback_edit', {'id': feedback.id}) }}">edit</a>
-                </td>
-            </tr>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 style="font-weight:700; color:#1a1a2e;">Feedbacks</h2>
+            <p style="color:#888;">Consultez les avis et notes des étudiants</p>
+        </div>
+        <a href="{{ path('app_feedback_new') }}" class="btn"
+           style="background:#4f46e5; color:white; border-radius:25px; padding:10px 24px; font-weight:600;">
+            + Nouveau feedback
+        </a>
+    </div>
+
+    <div class="row g-4">
+        {% for feedback in feedbacks %}
+        <div class="col-lg-4 col-md-6">
+            <div style="background:white; border-radius:16px; padding:24px; box-shadow:0 2px 12px rgba(0,0,0,0.07); height:100%;">
+                
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div>
+                        {% for i in 1..5 %}
+                            {% if i <= feedback.rating %}
+                                <span style="color:#fbbf24; font-size:1.1rem;">★</span>
+                            {% else %}
+                                <span style="color:#e5e7eb; font-size:1.1rem;">★</span>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                    <small style="color:#aaa;">
+                        {{ feedback.createdAt ? feedback.createdAt|date('d/m/Y') : '' }}
+                    </small>
+                </div>
+
+                <p style="color:#555; font-size:0.88rem; line-height:1.6; margin-bottom:20px;">
+                    {{ feedback.content|slice(0, 120) }}...
+                </p>
+
+                <div class="d-flex gap-2">
+                    <a href="{{ path('app_feedback_show', {'id': feedback.id}) }}"
+                       class="btn btn-sm" style="border:2px solid #4f46e5; color:#4f46e5; border-radius:20px; font-weight:600;">
+                        Voir
+                    </a>
+                    <a href="{{ path('app_feedback_edit', {'id': feedback.id}) }}"
+                       class="btn btn-sm" style="background:#4f46e5; color:white; border-radius:20px; font-weight:600;">
+                        Modifier
+                    </a>
+                </div>
+
+            </div>
+        </div>
         {% else %}
-            <tr>
-                <td colspan="5">no records found</td>
-            </tr>
+        <div class="col-12 text-center py-5">
+            <h4 style="color:#888;">Aucun feedback pour le moment</h4>
+            <a href="{{ path('app_feedback_new') }}" class="btn mt-3"
+               style="background:#4f46e5; color:white; border-radius:25px; padding:10px 24px; font-weight:600;">
+                Créer le premier feedback
+            </a>
+        </div>
         {% endfor %}
-        </tbody>
-    </table>
+    </div>
 
-    <a href="{{ path('app_feedback_new') }}">Create new</a>
+</div>
 {% endblock %}
