@@ -1,13 +1,54 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Edit Reclamation{% endblock %}
+{% block title %}Modifier Réclamation — ClubHub{% endblock %}
 
 {% block body %}
-    <h1>Edit Reclamation</h1>
+<div class="container mt-5 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-7">
 
-    {{ include('reclamation/_form.html.twig', {'button_label': 'Update'}) }}
+            <div style="background:white; border-radius:16px; padding:40px; box-shadow:0 2px 12px rgba(0,0,0,0.07);">
+                
+                <div class="mb-4">
+                    <h2 style="font-weight:700; color:#1a1a2e;">Modifier Réclamation</h2>
+                    <p style="color:#888;">Modifiez les informations de la réclamation</p>
+                </div>
 
-    <a href="{{ path('app_reclamation_index') }}">back to list</a>
+                {{ form_start(form) }}
+                    <div class="mb-3">
+                        <label style="font-weight:600; color:#1a1a2e; margin-bottom:6px; display:block;">Sujet</label>
+                        {{ form_widget(form.subject, {'attr': {'class': 'form-control', 'style': 'border-radius:10px; border:2px solid #e5e7eb; padding:10px 14px;'}}) }}
+                    </div>
 
-    {{ include('reclamation/_delete_form.html.twig') }}
+                    <div class="mb-3">
+                        <label style="font-weight:600; color:#1a1a2e; margin-bottom:6px; display:block;">Message</label>
+                        {{ form_widget(form.message, {'attr': {'class': 'form-control', 'rows': 5, 'style': 'border-radius:10px; border:2px solid #e5e7eb; padding:10px 14px;'}}) }}
+                    </div>
+
+                    <div class="mb-3">
+                        <label style="font-weight:600; color:#1a1a2e; margin-bottom:6px; display:block;">Statut</label>
+                        {{ form_widget(form.status, {'attr': {'class': 'form-control', 'style': 'border-radius:10px; border:2px solid #e5e7eb; padding:10px 14px;'}}) }}
+                    </div>
+
+                    <div class="mb-4">
+                        <label style="font-weight:600; color:#1a1a2e; margin-bottom:6px; display:block;">Date</label>
+                        {{ form_widget(form.createdAt, {'attr': {'class': 'form-control', 'style': 'border-radius:10px; border:2px solid #e5e7eb; padding:10px 14px;'}}) }}
+                    </div>
+
+                    <div class="d-flex gap-3">
+                        <button type="submit" class="btn"
+                                style="background:#4f46e5; color:white; border-radius:25px; padding:10px 28px; font-weight:600;">
+                            Enregistrer
+                        </button>
+                        <a href="{{ path('app_reclamation_index') }}" class="btn"
+                           style="border:2px solid #e5e7eb; color:#888; border-radius:25px; padding:10px 28px; font-weight:600;">
+                            Annuler
+                        </a>
+                    </div>
+                {{ form_end(form) }}
+
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

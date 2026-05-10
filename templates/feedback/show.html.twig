@@ -1,34 +1,67 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Feedback{% endblock %}
+{% block title %}Détail Feedback — ClubHub{% endblock %}
 
 {% block body %}
-    <h1>Feedback</h1>
+<div class="container mt-5 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
 
-    <table class="table">
-        <tbody>
-            <tr>
-                <th>Id</th>
-                <td>{{ feedback.id }}</td>
-            </tr>
-            <tr>
-                <th>Content</th>
-                <td>{{ feedback.content }}</td>
-            </tr>
-            <tr>
-                <th>Rating</th>
-                <td>{{ feedback.rating }}</td>
-            </tr>
-            <tr>
-                <th>CreatedAt</th>
-                <td>{{ feedback.createdAt ? feedback.createdAt|date('Y-m-d H:i:s') : '' }}</td>
-            </tr>
-        </tbody>
-    </table>
+            <div style="background:white; border-radius:16px; padding:40px; box-shadow:0 2px 12px rgba(0,0,0,0.07);">
 
-    <a href="{{ path('app_feedback_index') }}">back to list</a>
+                <div class="d-flex justify-content-between align-items-start mb-4">
+                    <div>
+                        <h2 style="font-weight:700; color:#1a1a2e;">Détail du Feedback</h2>
+                        <div class="mt-2">
+                            {% for i in 1..5 %}
+                                {% if i <= feedback.rating %}
+                                    <span style="color:#fbbf24; font-size:1.3rem;">★</span>
+                                {% else %}
+                                    <span style="color:#e5e7eb; font-size:1.3rem;">★</span>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <a href="{{ path('app_feedback_index') }}"
+                       style="color:#888; text-decoration:none; font-weight:500;">
+                        Retour
+                    </a>
+                </div>
 
-    <a href="{{ path('app_feedback_edit', {'id': feedback.id}) }}">edit</a>
+                <div style="background:#f4f6fb; border-radius:12px; padding:20px; margin-bottom:24px;">
+                    <small style="color:#aaa; font-weight:600; text-transform:uppercase;">Contenu</small>
+                    <p style="color:#1a1a2e; margin:8px 0 0; line-height:1.7;">
+                        {{ feedback.content }}
+                    </p>
+                </div>
 
-    {{ include('feedback/_delete_form.html.twig') }}
+                <div style="background:#f4f6fb; border-radius:12px; padding:20px; margin-bottom:30px;">
+                    <div class="row">
+                        <div class="col-md-6 mb-2">
+                            <small style="color:#aaa; font-weight:600; text-transform:uppercase;">Note</small>
+                            <p style="color:#1a1a2e; font-weight:600; margin:4px 0 0;">
+                                {{ feedback.rating }} / 5
+                            </p>
+                        </div>
+                        <div class="col-md-6 mb-2">
+                            <small style="color:#aaa; font-weight:600; text-transform:uppercase;">Date</small>
+                            <p style="color:#1a1a2e; font-weight:600; margin:4px 0 0;">
+                                {{ feedback.createdAt ? feedback.createdAt|date('d/m/Y H:i') : 'Non définie' }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-3">
+                    <a href="{{ path('app_feedback_edit', {'id': feedback.id}) }}"
+                       class="btn" style="background:#4f46e5; color:white; border-radius:25px; padding:10px 28px; font-weight:600;">
+                        Modifier
+                    </a>
+                    {{ include('feedback/_delete_form.html.twig') }}
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

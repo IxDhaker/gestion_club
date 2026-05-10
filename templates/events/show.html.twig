@@ -1,103 +1,100 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}{{ event.title }} — ClubHub{% endblock %}
+{% block title %}{{ event.titre }} — ClubHub{% endblock %}
 
 {% block body %}
+<div class="container mt-5 mb-5">
 
-{# ── Breadcrumb ──────────────────────────────────────────────────────────── #}
-<nav class="mb-4 fade-up" style="font-size:.82rem;color:var(--muted)">
-    <a href="{{ path('event_index') }}" class="text-accent">Events</a>
-    <i class="bi bi-chevron-right mx-1" style="font-size:.7rem"></i>
-    <span>{{ event.title }}</span>
-</nav>
+    <nav class="mb-4" style="font-size:.82rem; color:#888;">
+        <a href="{{ path('event_index') }}" style="color:#4f46e5;">Evenements</a>
+        <i class="bi bi-chevron-right mx-1" style="font-size:.7rem"></i>
+        <span>{{ event.titre }}</span>
+    </nav>
 
-{# ── Hero card ───────────────────────────────────────────────────────────── #}
-<div class="detail-hero fade-up fade-up-d1">
-    <div class="d-flex flex-wrap align-items-start justify-content-between gap-3">
-        <div>
-            <span class="card-tag mb-3 d-inline-block" style="background:rgba(110,168,200,.15);color:#6ea8c8;">
-                <i class="bi bi-calendar-event me-1"></i>Event
-            </span>
-            <h1 class="section-title mb-3">{{ event.title }}</h1>
+    <div style="background:white; border-radius:16px; padding:2.5rem; box-shadow:0 2px 12px rgba(0,0,0,0.07); margin-bottom:2rem;">
+        <div class="d-flex flex-wrap align-items-start justify-content-between gap-3">
+            <div>
+                <span style="background:#ede9fe; color:#4f46e5; border-radius:6px; padding:2px 10px; font-size:0.72rem; font-weight:600; text-transform:uppercase; margin-bottom:0.75rem; display:inline-block;">
+                    <i class="bi bi-calendar-event me-1"></i>Evenement
+                </span>
+                <h1 style="font-weight:700; color:#1a1a2e; font-size:2rem; margin-bottom:1rem;">{{ event.titre }}</h1>
 
-            {# Stats row #}
-            <div class="d-flex flex-wrap gap-2">
-                {% if event.date is defined and event.date %}
-                <span class="stat-chip">
-                    <i class="bi bi-calendar3"></i> {{ event.date|date('d F Y') }}
-                </span>
-                {% endif %}
-                {% if event.location is defined and event.location %}
-                <span class="stat-chip">
-                    <i class="bi bi-geo-alt"></i> {{ event.location }}
-                </span>
-                {% endif %}
-                <span class="stat-chip">
-                    <i class="bi bi-people"></i> {{ participantCount }} registered
-                </span>
-                {% if availablePlaces is not null %}
-                    {% if availablePlaces > 0 %}
-                    <span class="badge-places">{{ availablePlaces }} place{{ availablePlaces != 1 ? 's' }} left</span>
-                    {% else %}
-                    <span class="badge-full"><i class="bi bi-x-circle me-1"></i>Fully Booked</span>
+                <div class="d-flex flex-wrap gap-2">
+                    {% if event.dateEvent is defined and event.dateEvent %}
+                    <span style="background:#f4f6fb; border:1px solid #e5e7eb; border-radius:8px; padding:6px 14px; font-size:0.82rem; color:#555;">
+                        <i class="bi bi-calendar3" style="color:#4f46e5;"></i>
+                        {{ event.dateEvent|date('d F Y') }}
+                    </span>
                     {% endif %}
+                    {% if event.lieu is defined and event.lieu %}
+                    <span style="background:#f4f6fb; border:1px solid #e5e7eb; border-radius:8px; padding:6px 14px; font-size:0.82rem; color:#555;">
+                        <i class="bi bi-geo-alt" style="color:#4f46e5;"></i>
+                        {{ event.lieu }}
+                    </span>
+                    {% endif %}
+                    <span style="background:#f4f6fb; border:1px solid #e5e7eb; border-radius:8px; padding:6px 14px; font-size:0.82rem; color:#555;">
+                        <i class="bi bi-people" style="color:#4f46e5;"></i>
+                        {{ participantCount }} inscrit{{ participantCount != 1 ? 's' }}
+                    </span>
+                    {% if availablePlaces is not null %}
+                        {% if availablePlaces > 0 %}
+                        <span style="background:rgba(90,184,138,.12); border:1px solid rgba(90,184,138,.3); color:#2d8a5e; border-radius:6px; padding:4px 10px; font-size:0.75rem; font-weight:600;">
+                            {{ availablePlaces }} place{{ availablePlaces != 1 ? 's' }} restante{{ availablePlaces != 1 ? 's' }}
+                        </span>
+                        {% else %}
+                        <span style="background:rgba(224,90,90,.12); border:1px solid rgba(224,90,90,.3); color:#c0392b; border-radius:6px; padding:4px 10px; font-size:0.75rem; font-weight:600;">
+                            <i class="bi bi-x-circle me-1"></i>Complet
+                        </span>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="d-flex flex-column align-items-end gap-2">
+                {% if is_granted('ROLE_USER') %}
+                    {% if isParticipant %}
+                        <button style="background:#f4f6fb; color:#888; border:1px solid #e5e7eb; border-radius:8px; padding:8px 20px; font-weight:600;" disabled>
+                            <i class="bi bi-check-circle-fill me-1"></i>Inscrit
+                        </button>
+                    {% elseif availablePlaces is not null and availablePlaces == 0 %}
+                        <button style="background:#f4f6fb; color:#888; border:1px solid #e5e7eb; border-radius:8px; padding:8px 20px; font-weight:600;" disabled>
+                            <i class="bi bi-x-circle me-1"></i>Complet
+                        </button>
+                    {% else %}
+                        <form method="post" action="{{ path('event_participate', {id: event.id}) }}">
+                            <input type="hidden" name="_token" value="{{ csrf_token('participate_' ~ event.id) }}">
+                            <button type="submit" style="background:#4f46e5; color:white; border:none; border-radius:8px; padding:8px 20px; font-weight:600;">
+                                <i class="bi bi-person-plus me-1"></i>Participer
+                            </button>
+                        </form>
+                    {% endif %}
+                {% else %}
+                    <a href="#" style="background:transparent; color:#4f46e5; border:1px solid #4f46e5; border-radius:8px; padding:8px 20px; font-weight:600; display:inline-block;">
+                        <i class="bi bi-lock me-1"></i>Connectez-vous pour participer
+                    </a>
+                {% endif %}
+
+                {% if is_granted('ROLE_USER') %}
+                <a href="{{ path('event_participants', {id: event.id}) }}"
+                   style="background:transparent; color:#4f46e5; border:1px solid #4f46e5; border-radius:8px; padding:6px 16px; font-weight:600; font-size:0.8rem; display:inline-block;">
+                    <i class="bi bi-list-ul me-1"></i>Voir les participants
+                </a>
                 {% endif %}
             </div>
         </div>
 
-        {# ── Participate / status button ───────────────────────────────────── #}
-        <div class="d-flex flex-column align-items-end gap-2">
-            {% if is_granted('ROLE_USER') %}
-                {% if isParticipant %}
-                    <button class="btn-muted" disabled>
-                        <i class="bi bi-check-circle-fill me-1"></i>Registered
-                    </button>
-                {% elseif availablePlaces is not null and availablePlaces == 0 %}
-                    <button class="btn-muted" disabled>
-                        <i class="bi bi-x-circle me-1"></i>Fully Booked
-                    </button>
-                {% else %}
-                    <form method="post" action="{{ path('participation_register', {id: event.id}) }}">
-                        <input type="hidden" name="_token" value="{{ csrf_token('participate_' ~ event.id) }}">
-                        <button type="submit" class="btn-gold">
-                            <i class="bi bi-person-plus me-1"></i>Participate
-                        </button>
-                    </form>
-                {% endif %}
-            {% else %}
-                <a href="{{ path('app_login') }}" class="btn-outline-gold">
-                    <i class="bi bi-lock me-1"></i>Sign in to Participate
-                </a>
-            {% endif %}
-
-            {# View participants (logged-in users) #}
-            {% if is_granted('ROLE_USER') %}
-            <a href="{{ path('participation_list', {id: event.id}) }}" class="btn-outline-gold" style="font-size:.8rem;padding:.4rem 1rem;">
-                <i class="bi bi-list-ul me-1"></i>View Participants
-            </a>
-            {% endif %}
-        </div>
+        {% if event.description %}
+        <hr style="border-color:#f4f6fb; margin:1.75rem 0;">
+        <p style="color:#555; line-height:1.8; font-size:.96rem;">{{ event.description }}</p>
+        {% endif %}
     </div>
 
-    {# Description #}
-    {% if event.description %}
-    <hr style="border-color:var(--border);margin:1.75rem 0">
-    <p style="color:var(--text);line-height:1.8;font-size:.96rem;">{{ event.description }}</p>
+    {% if event.status is defined and event.status %}
+    <div style="background:white; border-radius:16px; padding:1.5rem; box-shadow:0 2px 12px rgba(0,0,0,0.07);">
+        <small style="color:#aaa; font-weight:600; text-transform:uppercase;">Statut</small>
+        <p style="color:#1a1a2e; font-weight:600; margin:4px 0 0;">{{ event.status }}</p>
+    </div>
     {% endif %}
-</div>
 
-{# ── Capacity bar ────────────────────────────────────────────────────────── #}
-{% if event.maxParticipants is defined and event.maxParticipants and event.maxParticipants > 0 %}
-<div class="fade-up fade-up-d2 mb-4">
-    {% set pct = ((participantCount / event.maxParticipants) * 100)|round %}
-    <div class="d-flex justify-content-between mb-1" style="font-size:.82rem;color:var(--muted)">
-        <span>Capacity</span>
-        <span>{{ participantCount }} / {{ event.maxParticipants }}</span>
-    </div>
-    <div style="height:6px;background:var(--surface-2);border-radius:4px;overflow:hidden">
-        <div style="height:100%;width:{{ pct }}%;background:{% if pct >= 90 %}var(--danger){% elseif pct >= 60 %}var(--accent){% else %}var(--success){% endif %};border-radius:4px;transition:width .6s ease"></div>
-    </div>
 </div>
-{% endif %}
-
 {% endblock %}

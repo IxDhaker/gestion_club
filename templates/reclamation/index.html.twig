@@ -1,41 +1,76 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Reclamation index{% endblock %}
+{% block title %}Réclamations — ClubHub{% endblock %}
 
 {% block body %}
-    <h1>Reclamation index</h1>
+<div class="container mt-5 mb-5">
 
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Id</th>
-                <th>Message</th>
-                <th>Subject</th>
-                <th>Status</th>
-                <th>CreatedAt</th>
-                <th>actions</th>
-            </tr>
-        </thead>
-        <tbody>
-        {% for reclamation in reclamations %}
-            <tr>
-                <td>{{ reclamation.id }}</td>
-                <td>{{ reclamation.message }}</td>
-                <td>{{ reclamation.subject }}</td>
-                <td>{{ reclamation.status }}</td>
-                <td>{{ reclamation.createdAt ? reclamation.createdAt|date('Y-m-d H:i:s') : '' }}</td>
-                <td>
-                    <a href="{{ path('app_reclamation_show', {'id': reclamation.id}) }}">show</a>
-                    <a href="{{ path('app_reclamation_edit', {'id': reclamation.id}) }}">edit</a>
-                </td>
-            </tr>
-        {% else %}
-            <tr>
-                <td colspan="6">no records found</td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 style="font-weight:700; color:#1a1a2e;">Réclamations</h2>
+            <p style="color:#888;">Gérez les réclamations des étudiants</p>
+        </div>
+        <a href="{{ path('app_reclamation_new') }}" class="btn"
+           style="background:#4f46e5; color:white; border-radius:25px; padding:10px 24px; font-weight:600;">
+            + Nouvelle réclamation
+        </a>
+    </div>
 
-    <a href="{{ path('app_reclamation_new') }}">Create new</a>
+    <div style="background:white; border-radius:16px; padding:24px; box-shadow:0 2px 12px rgba(0,0,0,0.07);">
+        <table class="table" style="margin:0;">
+            <thead>
+                <tr style="border-bottom:2px solid #f4f6fb;">
+                    <th style="color:#aaa; font-weight:600; font-size:0.85rem; text-transform:uppercase; padding:12px 16px;">Sujet</th>
+                    <th style="color:#aaa; font-weight:600; font-size:0.85rem; text-transform:uppercase; padding:12px 16px;">Message</th>
+                    <th style="color:#aaa; font-weight:600; font-size:0.85rem; text-transform:uppercase; padding:12px 16px;">Statut</th>
+                    <th style="color:#aaa; font-weight:600; font-size:0.85rem; text-transform:uppercase; padding:12px 16px;">Date</th>
+                    <th style="color:#aaa; font-weight:600; font-size:0.85rem; text-transform:uppercase; padding:12px 16px;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for reclamation in reclamations %}
+                <tr style="border-bottom:1px solid #f4f6fb;">
+                    <td style="padding:14px 16px; font-weight:600; color:#1a1a2e;">
+                        {{ reclamation.subject }}
+                    </td>
+                    <td style="padding:14px 16px; color:#888; font-size:0.88rem;">
+                        {{ reclamation.message|slice(0, 60) }}...
+                    </td>
+                    <td style="padding:14px 16px;">
+                        <span style="background:#ede9fe; color:#4f46e5; border-radius:20px; padding:4px 14px; font-size:0.78rem; font-weight:600;">
+                            {{ reclamation.status }}
+                        </span>
+                    </td>
+                    <td style="padding:14px 16px; color:#888; font-size:0.85rem;">
+                        {{ reclamation.createdAt ? reclamation.createdAt|date('d/m/Y') : '' }}
+                    </td>
+                    <td style="padding:14px 16px;">
+                        <div class="d-flex gap-2">
+                            <a href="{{ path('app_reclamation_show', {'id': reclamation.id}) }}"
+                               class="btn btn-sm" style="border:2px solid #4f46e5; color:#4f46e5; border-radius:20px; font-weight:600;">
+                                Voir
+                            </a>
+                            <a href="{{ path('app_reclamation_edit', {'id': reclamation.id}) }}"
+                               class="btn btn-sm" style="background:#4f46e5; color:white; border-radius:20px; font-weight:600;">
+                                Modifier
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" class="text-center py-5">
+                        <h5 style="color:#888;">Aucune réclamation pour le moment</h5>
+                        <a href="{{ path('app_reclamation_new') }}" class="btn mt-2"
+                           style="background:#4f46e5; color:white; border-radius:25px; padding:8px 22px; font-weight:600;">
+                            Créer une réclamation
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</div>
 {% endblock %}

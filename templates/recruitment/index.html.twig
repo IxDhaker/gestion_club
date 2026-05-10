@@ -1,41 +1,62 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Recruitment index{% endblock %}
+{% block title %}Recrutements — ClubHub{% endblock %}
 
 {% block body %}
-    <h1>Recruitment index</h1>
+<div class="container mt-5 mb-5">
 
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Id</th>
-                <th>Titre</th>
-                <th>Description</th>
-                <th>DateLimite</th>
-                <th>Status</th>
-                <th>actions</th>
-            </tr>
-        </thead>
-        <tbody>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 style="font-weight:700; color:#1a1a2e;">Recrutements</h2>
+            <p style="color:#888;">Trouvez et postulez aux recrutements des clubs</p>
+        </div>
+        <a href="{{ path('app_recruitment_new') }}" class="btn" 
+           style="background:#4f46e5; color:white; border-radius:25px; padding:10px 24px; font-weight:600;">
+            + Nouveau recrutement
+        </a>
+    </div>
+
+    <div class="row g-4">
         {% for recruitment in recruitments %}
-            <tr>
-                <td>{{ recruitment.id }}</td>
-                <td>{{ recruitment.titre }}</td>
-                <td>{{ recruitment.description }}</td>
-                <td>{{ recruitment.dateLimite ? recruitment.dateLimite|date('Y-m-d H:i:s') : '' }}</td>
-                <td>{{ recruitment.status }}</td>
-                <td>
-                    <a href="{{ path('app_recruitment_show', {'id': recruitment.id}) }}">show</a>
-                    <a href="{{ path('app_recruitment_edit', {'id': recruitment.id}) }}">edit</a>
-                </td>
-            </tr>
-        {% else %}
-            <tr>
-                <td colspan="6">no records found</td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+        <div class="col-lg-4 col-md-6">
+            <div style="background:white; border-radius:16px; padding:24px; box-shadow:0 2px 12px rgba(0,0,0,0.07); height:100%; transition: transform 0.2s;"
+                 onmouseover="this.style.transform='translateY(-5px)'" 
+                 onmouseout="this.style.transform='translateY(0)'">
+                
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <span style="background:#ede9fe; color:#4f46e5; border-radius:20px; padding:4px 14px; font-size:0.78rem; font-weight:600;">
+                        {{ recruitment.status }}
+                    </span>
+                    <small style="color:#aaa;">{{ recruitment.dateLimite ? recruitment.dateLimite|date('d/m/Y') : '' }}</small>
+                </div>
 
-    <a href="{{ path('app_recruitment_new') }}">Create new</a>
+                <h5 style="font-weight:700; color:#1a1a2e; margin-bottom:8px;">{{ recruitment.titre }}</h5>
+                <p style="color:#888; font-size:0.88rem; margin-bottom:20px;">
+                    {{ recruitment.description|slice(0, 100) }}...
+                </p>
+
+                <div class="d-flex gap-2">
+                    <a href="{{ path('app_recruitment_show', {'id': recruitment.id}) }}" 
+                       class="btn btn-sm" style="border:2px solid #4f46e5; color:#4f46e5; border-radius:20px; font-weight:600;">
+                        Voir
+                    </a>
+                    <a href="{{ path('app_recruitment_edit', {'id': recruitment.id}) }}" 
+                       class="btn btn-sm" style="background:#4f46e5; color:white; border-radius:20px; font-weight:600;">
+                        Modifier
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="col-12 text-center py-5">
+            <h4 style="color:#888; margin-top:16px;">Aucun recrutement pour le moment</h4>
+            <a href="{{ path('app_recruitment_new') }}" class="btn mt-3"
+               style="background:#4f46e5; color:white; border-radius:25px; padding:10px 24px; font-weight:600;">
+                Créer le premier recrutement
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+
+</div>
 {% endblock %}

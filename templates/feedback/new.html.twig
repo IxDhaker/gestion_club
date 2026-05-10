@@ -1,11 +1,49 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}New Feedback{% endblock %}
+{% block title %}Nouveau Feedback — ClubHub{% endblock %}
 
 {% block body %}
-    <h1>Create new Feedback</h1>
+<div class="container mt-5 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-7">
 
-    {{ include('feedback/_form.html.twig') }}
+            <div style="background:white; border-radius:16px; padding:40px; box-shadow:0 2px 12px rgba(0,0,0,0.07);">
+                
+                <div class="mb-4">
+                    <h2 style="font-weight:700; color:#1a1a2e;">Nouveau Feedback</h2>
+                    <p style="color:#888;">Donnez votre avis sur un événement</p>
+                </div>
 
-    <a href="{{ path('app_feedback_index') }}">back to list</a>
+                {{ form_start(form) }}
+                    <div class="mb-3">
+                        <label style="font-weight:600; color:#1a1a2e; margin-bottom:6px; display:block;">Contenu</label>
+                        {{ form_widget(form.content, {'attr': {'class': 'form-control', 'rows': 5, 'style': 'border-radius:10px; border:2px solid #e5e7eb; padding:10px 14px;'}}) }}
+                    </div>
+
+                    <div class="mb-3">
+                        <label style="font-weight:600; color:#1a1a2e; margin-bottom:6px; display:block;">Note (1 à 5)</label>
+                        {{ form_widget(form.rating, {'attr': {'class': 'form-control', 'style': 'border-radius:10px; border:2px solid #e5e7eb; padding:10px 14px;', 'min': 1, 'max': 5}}) }}
+                    </div>
+
+                    <div class="mb-4">
+                        <label style="font-weight:600; color:#1a1a2e; margin-bottom:6px; display:block;">Date</label>
+                        {{ form_widget(form.createdAt, {'attr': {'class': 'form-control', 'style': 'border-radius:10px; border:2px solid #e5e7eb; padding:10px 14px;'}}) }}
+                    </div>
+
+                    <div class="d-flex gap-3">
+                        <button type="submit" class="btn"
+                                style="background:#4f46e5; color:white; border-radius:25px; padding:10px 28px; font-weight:600;">
+                            Enregistrer
+                        </button>
+                        <a href="{{ path('app_feedback_index') }}" class="btn"
+                           style="border:2px solid #e5e7eb; color:#888; border-radius:25px; padding:10px 28px; font-weight:600;">
+                            Annuler
+                        </a>
+                    </div>
+                {{ form_end(form) }}
+
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
