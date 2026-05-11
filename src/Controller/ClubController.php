@@ -33,9 +33,18 @@ class ClubController extends AbstractController
         ]);
     }
 
+    // SHOW
+    #[Route('/{id}', name: 'club_show', methods: ['GET'])]
+    public function show(Club $club): Response
+    {
+        return $this->render('clubs/show.html.twig', [
+            'club' => $club,
+        ]);
+    }
+
     // SHOW NEW FORM
     #[Route('/new', name: 'club_new', methods: ['GET', 'POST'])]
-    #[IsGranted('ROLE_ADMIN')]
+    #[IsGranted('ROLE_USER')]
     public function new(Request $request, SluggerInterface $slugger): Response
     {
         $club = new Club();

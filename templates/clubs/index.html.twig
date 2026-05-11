@@ -16,7 +16,7 @@
 
     {% for club in clubs %}
         <div class="card mb-3 p-3">
-            <h5>{{ club.name }}</h5>
+            <h5>{{ club.nom }}</h5>
             <p>{{ club.description }}</p>
 
             <a href="{{ path('club_show', {'id': club.id}) }}" class="btn btn-sm btn-info">
