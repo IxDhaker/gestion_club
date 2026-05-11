@@ -231,37 +231,34 @@
                 {% endfor %}
             </div>
 
-            {# Role — custom card UI #}
+            {# Role — custom card UI that wraps the real Symfony radio inputs #}
             <div class="mb-3">
                 <span class="role-label">I am a</span>
-                <div class="role-grid">
-                    {# Étudiant #}
-                    <div>
-                        <input type="radio"
-                               class="role-option"
-                               id="role_etudiant"
-                               name="{{ registrationForm.role.vars.full_name }}"
-                               value="{{ constant('App\\Entity\\User::ROLE_ETUDIANT') }}">
-                        <label class="role-option-label" for="role_etudiant">
+
+                {# Hide the real Symfony radios but keep them in the DOM so they submit correctly #}
+                <div id="sf-role-radios" style="display:none;">
+                    {{ form_widget(registrationForm.role) }}
+                </div>
+
+                <div class="role-grid" id="role-cards">
+                    {# Étudiant card #}
+                    <div class="role-card-wrap" data-value="ROLE_ETUDIANT">
+                        <div class="role-option-label" id="card-etudiant">
                             <span class="role-emoji">🎓</span>
                             <span class="role-title">Étudiant</span>
                             <span class="role-sub">Student member</span>
-                        </label>
+                        </div>
                     </div>
-                    {# Président #}
-                    <div>
-                        <input type="radio"
-                               class="role-option"
-                               id="role_president"
-                               name="{{ registrationForm.role.vars.full_name }}"
-                               value="{{ constant('App\\Entity\\User::ROLE_PRESIDENT') }}">
-                        <label class="role-option-label" for="role_president">
+                    {# Président card #}
+                    <div class="role-card-wrap" data-value="ROLE_PRESIDENT">
+                        <div class="role-option-label" id="card-president">
                             <span class="role-emoji">👑</span>
                             <span class="role-title">Président</span>
                             <span class="role-sub">Club president</span>
-                        </label>
+                        </div>
                     </div>
                 </div>
+
                 {% for error in registrationForm.role.vars.errors %}
                     <div class="field-error"><i class="bi bi-exclamation-circle"></i>{{ error.message }}</div>
                 {% endfor %}
@@ -289,6 +286,9 @@
                 <div class="field-error mb-2"><i class="bi bi-exclamation-circle"></i>{{ error.message }}</div>
             {% endfor %}
 
+            {# CSRF token — must be rendered explicitly when render_rest is false #}
+            {{ form_widget(registrationForm._token) }}
+
             <button type="submit" class="btn-auth">
                 <i class="bi bi-rocket-takeoff me-2"></i>Create My Account
             </button>
@@ -302,4 +302,46 @@
 
     </div>
 </div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const cards = document.querySelectorAll('#role-cards .role-card-wrap');
+    // The real Symfony radio inputs are hidden inside #sf-role-radios
+    const sfRadios = document.querySelectorAll('#sf-role-radios input[type="radio"]');
+
+    function selectCard(value) {
+        // Unselect all cards
+        cards.forEach(c => c.querySelector('.role-option-label').style.borderColor = '');
+        cards.forEach(c => c.querySelector('.role-option-label').style.background = '');
+        cards.forEach(c => c.querySelector('.role-option-label').style.boxShadow = '');
+
+        // Highlight chosen card
+        cards.forEach(c => {
+            if (c.dataset.value === value) {
+                const lbl = c.querySelector('.role-option-label');
+                lbl.style.borderColor = 'var(--accent)';
+                lbl.style.background  = 'var(--accent-soft)';
+                lbl.style.boxShadow   = '0 0 0 3px var(--accent-glow)';
+            }
+        });
+
+        // Check the matching Symfony radio
+        sfRadios.forEach(r => {
+            r.checked = r.value === value;
+        });
+    }
+
+    // Wire clicks on the visual cards
+    cards.forEach(card => {
+        card.addEventListener('click', () => selectCard(card.dataset.value));
+    });
+
+    // Restore state if form was re-displayed with errors (a radio may already be checked)
+    sfRadios.forEach(r => {
+        if (r.checked) selectCard(r.value);
+    });
+});
+</script>
 {% endblock %}

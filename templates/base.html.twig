@@ -129,26 +129,26 @@
         </a>
 
         <div class="d-flex align-items-center gap-1">
-    <a href="{{ path('app_home') }}" class="nav-link {% if app.request.get('_route') == 'app_home' %}active{% endif %}">
+    <a href="{{ path('app_home') }}" class="nav-link {% if app.request.attributes.get('_route') == 'app_home' %}active{% endif %}">
         <i class="bi bi-house me-1"></i>Accueil
     </a>
-    <a href="{{ path('club_index') }}" class="nav-link {% if app.request.get('_route') starts with 'club' %}active{% endif %}">
+    <a href="{{ path('club_index') }}" class="nav-link {% if app.request.attributes.get('_route') starts with 'club' %}active{% endif %}">
         <i class="bi bi-collection me-1"></i>Clubs
     </a>
-    <a href="{{ path('event_index') }}" class="nav-link {% if app.request.get('_route') starts with 'event' %}active{% endif %}">
+    <a href="{{ path('event_index') }}" class="nav-link {% if app.request.attributes.get('_route') starts with 'event' %}active{% endif %}">
         <i class="bi bi-calendar3 me-1"></i>Evenements
     </a>
-    <a href="{{ path('app_recruitment_index') }}" class="nav-link {% if app.request.get('_route') starts with 'app_recruitment' %}active{% endif %}">
+    <a href="{{ path('app_recruitment_index') }}" class="nav-link {% if app.request.attributes.get('_route') starts with 'app_recruitment' %}active{% endif %}">
         <i class="bi bi-megaphone me-1"></i>Recrutements
     </a>
-    <a href="{{ path('app_reclamation_index') }}" class="nav-link {% if app.request.get('_route') starts with 'app_reclamation' %}active{% endif %}">
+    <a href="{{ path('app_reclamation_index') }}" class="nav-link {% if app.request.attributes.get('_route') starts with 'app_reclamation' %}active{% endif %}">
         <i class="bi bi-envelope me-1"></i>Reclamations
     </a>
-    <a href="{{ path('app_feedback_index') }}" class="nav-link {% if app.request.get('_route') starts with 'app_feedback' %}active{% endif %}">
+    <a href="{{ path('app_feedback_index') }}" class="nav-link {% if app.request.attributes.get('_route') starts with 'app_feedback' %}active{% endif %}">
         <i class="bi bi-star me-1"></i>Feedbacks
     </a>
     {% if is_granted('ROLE_USER') %}
-    <a href="{{ path('app_dashboard') }}" class="nav-link {% if app.request.get('_route') == 'app_dashboard' %}active{% endif %}">
+    <a href="{{ path('app_dashboard') }}" class="nav-link {% if app.request.attributes.get('_route') == 'app_dashboard' %}active{% endif %}">
         <i class="bi bi-person-circle me-1"></i>Dashboard
     </a>
     <a href="{{ path('app_logout') }}" class="btn-outline-gold ms-2">
