@@ -13,7 +13,7 @@
         * { font-family: 'Poppins', sans-serif; }
         body { background-color: #f4f6fb; color: #1a1a2e; }
 
-        /* NAVBAR */
+       
         .navbar { background-color: #ffffff; box-shadow: 0 2px 10px rgba(0,0,0,0.08); padding: 12px 30px; }
         .navbar-brand { font-weight: 700; font-size: 1.4rem; color: #4f46e5 !important; }
         .navbar-brand span { color: #1a1a2e; }
@@ -25,33 +25,27 @@
         .btn-register { background-color: #4f46e5; color: white; border-radius: 25px; padding: 6px 20px; font-weight: 600; transition: all 0.2s; }
         .btn-register:hover { background-color: #3730a3; color: white; }
 
-        /* MAIN */
+        
         .main-content { min-height: calc(100vh - 70px); padding: 30px 0; }
 
-        /* FOOTER */
+        
         footer { background-color: #1a1a2e; color: #aaa; text-align: center; padding: 20px; font-size: 0.85rem; }
         footer span { color: #4f46e5; font-weight: 600; }
 
-        /* TABLES */
         .table { color: #1a1a2e !important; }
         .table th { color: #888 !important; font-size: 0.78rem; font-weight: 600; text-transform: uppercase; background: #f4f6fb !important; border-color: #e5e7eb !important; }
         .table td { vertical-align: middle; border-color: #e5e7eb !important; }
         .table tbody tr:hover { background: #f4f6fb !important; }
 
-        /* FORMS */
+        
         .form-control, .form-select { border: 2px solid #e5e7eb !important; border-radius: 10px !important; padding: 10px 14px !important; background: white !important; color: #1a1a2e !important; }
         .form-control:focus, .form-select:focus { border-color: #4f46e5 !important; box-shadow: 0 0 0 3px rgba(79,70,229,0.1) !important; }
 
-        /* BUTTONS */
         .btn-primary { background: #4f46e5 !important; border: none !important; border-radius: 25px !important; font-weight: 600 !important; }
         .btn-primary:hover { background: #3730a3 !important; }
         .btn-secondary { border-radius: 25px !important; font-weight: 600 !important; }
         .btn-danger { border-radius: 25px !important; font-weight: 600 !important; }
-
-        /* CARDS */
         .card { border-radius: 16px !important; border: none !important; box-shadow: 0 2px 12px rgba(0,0,0,0.07) !important; }
-
-        /* DARK THEME OVERRIDES — so Dhaker/Brahim templates still work */
         :root {
             --bg: #f4f6fb;
             --surface: #ffffff;
@@ -115,13 +109,49 @@
         .text-muted-custom { color: #888; }
         .navbar-custom { background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.08); padding: 1rem 0; position: sticky; top: 0; z-index: 1000; }
         .navbar-brand { font-weight: 700 !important; }
+        .user-dropdown-wrap { position: relative; }
+        .user-dropdown-btn {
+            display: flex; align-items: center; gap: .5rem;
+            background: #ede9fe; border: none; border-radius: 25px;
+            padding: 7px 18px; font-weight: 600; font-size: .88rem;
+            color: #4f46e5; cursor: pointer; transition: background .2s, box-shadow .2s;
+        }
+        .user-dropdown-btn:hover { background: #ddd6fe; box-shadow: 0 2px 8px rgba(79,70,229,.18); }
+        .user-dropdown-btn .avatar-sm {
+            width: 28px; height: 28px; border-radius: 50%;
+            background: #4f46e5; color: white; display: flex; align-items: center;
+            justify-content: center; font-size: .78rem; font-weight: 700; flex-shrink: 0;
+        }
+        .user-dropdown-btn .chevron { font-size: .75rem; transition: transform .2s; }
+        .user-dropdown-btn.open .chevron { transform: rotate(180deg); }
+        .user-dropdown-menu {
+            position: absolute; right: 0; top: calc(100% + 10px);
+            background: white; border: 1px solid #e5e7eb; border-radius: 14px;
+            box-shadow: 0 8px 30px rgba(79,70,229,.14); min-width: 190px;
+            padding: 8px; z-index: 2000;
+            opacity: 0; transform: translateY(-8px) scale(.97);
+            pointer-events: none; transition: opacity .18s ease, transform .18s ease;
+        }
+        .user-dropdown-menu.show {
+            opacity: 1; transform: translateY(0) scale(1); pointer-events: auto;
+        }
+        .user-dropdown-menu a {
+            display: flex; align-items: center; gap: .6rem;
+            padding: 9px 14px; border-radius: 9px; font-size: .87rem;
+            font-weight: 500; color: #374151; text-decoration: none;
+            transition: background .15s, color .15s;
+        }
+        .user-dropdown-menu a:hover { background: #ede9fe; color: #4f46e5; }
+        .user-dropdown-menu a i { font-size: 1rem; color: #4f46e5; }
+        .user-dropdown-divider { height: 1px; background: #e5e7eb; margin: 6px 0; }
+        .user-dropdown-menu .signout-link:hover { background: rgba(224,90,90,.08); color: #c0392b; }
+        .user-dropdown-menu .signout-link i { color: #e05a5a; }
     </style>
 
     {% block stylesheets %}{% endblock %}
 </head>
 <body>
 
-{# ── Navbar ─────────────────────────────────────────────────────────────── #}
 <nav class="navbar-custom">
     <div class="container d-flex align-items-center justify-content-between">
         <a href="{{ path('app_home') }}" class="navbar-brand">
@@ -148,12 +178,32 @@
         <i class="bi bi-star me-1"></i>Feedbacks
     </a>
     {% if is_granted('ROLE_USER') %}
-    <a href="{{ path('app_dashboard') }}" class="nav-link {% if app.request.attributes.get('_route') == 'app_dashboard' %}active{% endif %}">
-        <i class="bi bi-person-circle me-1"></i>Dashboard
-    </a>
-    <a href="{{ path('app_logout') }}" class="btn-outline-gold ms-2">
-        <i class="bi bi-box-arrow-left me-1"></i>Sign out
-    </a>
+    <div class="user-dropdown-wrap ms-2" id="userDropdownWrap">
+        <button class="user-dropdown-btn" id="userDropdownBtn" type="button" aria-expanded="false">
+            <span class="avatar-sm">{{ app.user.nom|first|upper }}</span>
+            {{ app.user.nom }}
+            <i class="bi bi-chevron-down chevron"></i>
+        </button>
+        <div class="user-dropdown-menu" id="userDropdownMenu" role="menu">
+            <a href="{{ path('app_dashboard') }}" role="menuitem">
+                <i class="bi bi-person-circle"></i>Profil
+            </a>
+            {% if is_granted('ROLE_ADMIN') %}
+            <a href="{{ path('app_dashboard') }}" role="menuitem">
+                <i class="bi bi-speedometer2"></i>Dashboard
+            </a>
+            {% endif %}
+            {% if is_granted('ROLE_PRESIDENT') %}
+            <a href="{{ path('club_index') }}" role="menuitem">
+                <i class="bi bi-collection-fill"></i>Mes clubs
+            </a>
+            {% endif %}
+            <div class="user-dropdown-divider"></div>
+            <a href="{{ path('app_logout') }}" class="signout-link" role="menuitem">
+                <i class="bi bi-box-arrow-left"></i>Sign out
+            </a>
+        </div>
+    </div>
     {% else %}
     <a href="{{ path('app_login') }}" class="btn-outline-gold ms-2">
         <i class="bi bi-box-arrow-in-right me-1"></i>Sign in
@@ -187,6 +237,30 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 {% block javascripts %}{% endblock %}
+
+<script>
+(function () {
+    const btn  = document.getElementById('userDropdownBtn');
+    const menu = document.getElementById('userDropdownMenu');
+    if (!btn || !menu) return;
+
+    btn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        const isOpen = menu.classList.contains('show');
+        menu.classList.toggle('show');
+        btn.classList.toggle('open');
+        btn.setAttribute('aria-expanded', String(!isOpen));
+    });
+
+    document.addEventListener('click', function () {
+        menu.classList.remove('show');
+        btn.classList.remove('open');
+        btn.setAttribute('aria-expanded', 'false');
+    });
+
+    menu.addEventListener('click', function (e) { e.stopPropagation(); });
+})();
+</script>
 
 </body>
 </html>
