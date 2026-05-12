@@ -50,10 +50,12 @@
                                class="btn btn-sm" style="border:2px solid #4f46e5; color:#4f46e5; border-radius:20px; font-weight:600;">
                                 Voir
                             </a>
+                            {% if is_granted('ROLE_ADMIN') %}
                             <a href="{{ path('app_reclamation_edit', {'id': reclamation.id}) }}"
                                class="btn btn-sm" style="background:#4f46e5; color:white; border-radius:20px; font-weight:600;">
                                 Modifier
                             </a>
+                            {% endif %}
                         </div>
                     </td>
                 </tr>

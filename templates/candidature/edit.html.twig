@@ -1,0 +1,16 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier Candidature{% endblock %}
+
+{% block body %}
+<div class="container mt-5">
+    <h2>Modifier la candidature (Statut)</h2>
+
+    <div class="card p-4 mt-4" style="max-width: 600px;">
+        {{ form_start(form) }}
+            {{ form_widget(form) }}
+            <button class="btn btn-primary mt-3">Enregistrer</button>
+        {{ form_end(form) }}
+    </div>
+</div>
+{% endblock %}

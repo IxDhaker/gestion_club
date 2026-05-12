@@ -1,0 +1,46 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Candidatures{% endblock %}
+
+{% block body %}
+<div class="container mt-5">
+    <h2>Liste des candidatures reçues</h2>
+
+    <table class="table mt-4">
+        <thead>
+            <tr>
+                <th>Candidat</th>
+                <th>Recrutement</th>
+                <th>Message</th>
+                <th>Statut</th>
+                <th>Date</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for candidature in candidatures %}
+            <tr>
+                <td>{{ candidature.user.nom }}</td>
+                <td>{{ candidature.recruitment.titre }}</td>
+                <td>{{ candidature.message }}</td>
+                <td>{{ candidature.status }}</td>
+                <td>{{ candidature.dateCandidature ? candidature.dateCandidature|date('d/m/Y') : '' }}</td>
+                <td>
+                    <div class="d-flex gap-2">
+                        <a href="{{ path('app_candidature_edit', {'id': candidature.id}) }}" class="btn btn-sm btn-info">Modifier statut</a>
+                        <form method="post" action="{{ path('app_candidature_delete', {'id': candidature.id}) }}" onsubmit="return confirm('Supprimer ?');">
+                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ candidature.id) }}">
+                            <button class="btn btn-sm btn-danger">Supprimer</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="6">Aucune candidature trouvée</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

@@ -45,6 +45,7 @@ class RegistrationFormType extends AbstractType
                 'multiple' => false,
                 'choices'  => [
                     '🎓  Student (Étudiant)'       => User::ROLE_ETUDIANT,
+                    '👔  Responsable'              => User::ROLE_RESPONSABLE,
                     '👑  Club President (Président)' => User::ROLE_PRESIDENT,
                 ],
                 'constraints' => [

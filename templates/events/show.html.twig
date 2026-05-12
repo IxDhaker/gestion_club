@@ -74,11 +74,20 @@
                     </a>
                 {% endif %}
 
-                {% if is_granted('ROLE_USER') %}
+                {% if is_granted('ROLE_RESPONSABLE') %}
                 <a href="{{ path('event_participants', {id: event.id}) }}"
                    style="background:transparent; color:#4f46e5; border:1px solid #4f46e5; border-radius:8px; padding:6px 16px; font-weight:600; font-size:0.8rem; display:inline-block;">
                     <i class="bi bi-list-ul me-1"></i>Voir les participants
                 </a>
+                {% endif %}
+                
+                {% if is_granted('ROLE_ADMIN') and event.status != 'Validé' %}
+                <form method="post" action="{{ path('event_validate', {id: event.id}) }}" style="margin-top: 5px;">
+                    <input type="hidden" name="_token" value="{{ csrf_token('validate' ~ event.id) }}">
+                    <button type="submit" class="btn btn-sm btn-success" style="font-weight:600;">
+                        <i class="bi bi-check-circle me-1"></i>Valider l'événement
+                    </button>
+                </form>
                 {% endif %}
             </div>
         </div>

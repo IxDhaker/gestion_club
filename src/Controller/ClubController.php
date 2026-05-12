@@ -44,7 +44,7 @@ class ClubController extends AbstractController
 
     // SHOW NEW FORM
     #[Route('/new', name: 'club_new', methods: ['GET', 'POST'])]
-    #[IsGranted('ROLE_USER')]
+    #[IsGranted('ROLE_PRESIDENT')]
     public function new(Request $request, SluggerInterface $slugger): Response
     {
         $club = new Club();
@@ -77,5 +77,51 @@ class ClubController extends AbstractController
         return $this->render('clubs/new.html.twig', [
             'form' => $form->createView(),
         ]);
+    }
+    // EDIT CLUB
+    #[Route('/{id}/edit', name: 'club_edit', methods: ['GET', 'POST'])]
+    #[IsGranted('ROLE_PRESIDENT')]
+    public function edit(Request $request, Club $club, SluggerInterface $slugger): Response
+    {
+        $form = $this->createForm(ClubType::class, $club);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $logoFile = $form->get('logoFile')->getData();
+
+            if ($logoFile) {
+                $safeName = $slugger->slug(pathinfo($logoFile->getClientOriginalName(), PATHINFO_FILENAME));
+                $newFilename = $safeName.'-'.uniqid().'.'.$logoFile->guessExtension();
+
+                $logoFile->move(
+                    $this->getParameter('logos_directory'),
+                    $newFilename
+                );
+
+                $club->setLogo($newFilename);
+            }
+
+            $this->em->flush();
+
+            return $this->redirectToRoute('club_show', ['id' => $club->getId()]);
+        }
+
+        return $this->render('clubs/edit.html.twig', [
+            'club' => $club,
+            'form' => $form->createView(),
+        ]);
+    }
+
+    // DELETE CLUB
+    #[Route('/{id}', name: 'club_delete', methods: ['POST'])]
+    #[IsGranted('ROLE_ADMIN')]
+    public function delete(Request $request, Club $club): Response
+    {
+        if ($this->isCsrfTokenValid('delete'.$club->getId(), $request->request->get('_token'))) {
+            $this->em->remove($club);
+            $this->em->flush();
+        }
+
+        return $this->redirectToRoute('club_index');
     }
 }

@@ -7,7 +7,10 @@ use App\Repository\EventRepository;
 use App\Repository\ParticipationRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Request;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('/events')]
 class EventController extends AbstractController
@@ -60,5 +63,18 @@ class EventController extends AbstractController
             'isParticipating' => $isParticipating,
             'spotsLeft'       => $spotsLeft,
         ]);
+    }
+    // ─── VALIDATE (ADMIN) ──────────────────────────────────────────────────────
+    #[Route('/{id}/validate', name: 'event_validate', methods: ['POST'], requirements: ['id' => '\d+'])]
+    #[IsGranted('ROLE_ADMIN')]
+    public function validate(Request $request, Event $event, EntityManagerInterface $em): Response
+    {
+        if ($this->isCsrfTokenValid('validate'.$event->getId(), $request->request->get('_token'))) {
+            $event->setStatus('Validé');
+            $em->flush();
+            $this->addFlash('success', 'Event validated successfully.');
+        }
+
+        return $this->redirectToRoute('event_show', ['id' => $event->getId()]);
     }
 }

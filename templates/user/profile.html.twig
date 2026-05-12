@@ -1,0 +1,14 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mon Profil{% endblock %}
+
+{% block body %}
+<div class="container mt-5">
+    <h2>Mon Profil</h2>
+    <div class="card p-4 mt-4" style="max-width: 600px;">
+        <p><strong>Nom:</strong> {{ user.nom }}</p>
+        <p><strong>Email:</strong> {{ user.email }}</p>
+        <p><strong>Rôles:</strong> {{ user.roles|join(', ') }}</p>
+    </div>
+</div>
+{% endblock %}

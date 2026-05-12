@@ -159,60 +159,78 @@
         </a>
 
         <div class="d-flex align-items-center gap-1">
-    <a href="{{ path('app_home') }}" class="nav-link {% if app.request.attributes.get('_route') == 'app_home' %}active{% endif %}">
-        <i class="bi bi-house me-1"></i>Accueil
-    </a>
-    <a href="{{ path('club_index') }}" class="nav-link {% if app.request.attributes.get('_route') starts with 'club' %}active{% endif %}">
-        <i class="bi bi-collection me-1"></i>Clubs
-    </a>
-    <a href="{{ path('event_index') }}" class="nav-link {% if app.request.attributes.get('_route') starts with 'event' %}active{% endif %}">
-        <i class="bi bi-calendar3 me-1"></i>Evenements
-    </a>
-    <a href="{{ path('app_recruitment_index') }}" class="nav-link {% if app.request.attributes.get('_route') starts with 'app_recruitment' %}active{% endif %}">
-        <i class="bi bi-megaphone me-1"></i>Recrutements
-    </a>
-    <a href="{{ path('app_reclamation_index') }}" class="nav-link {% if app.request.attributes.get('_route') starts with 'app_reclamation' %}active{% endif %}">
-        <i class="bi bi-envelope me-1"></i>Reclamations
-    </a>
-    <a href="{{ path('app_feedback_index') }}" class="nav-link {% if app.request.attributes.get('_route') starts with 'app_feedback' %}active{% endif %}">
-        <i class="bi bi-star me-1"></i>Feedbacks
-    </a>
-    {% if is_granted('ROLE_USER') %}
-    <div class="user-dropdown-wrap ms-2" id="userDropdownWrap">
-        <button class="user-dropdown-btn" id="userDropdownBtn" type="button" aria-expanded="false">
-            <span class="avatar-sm">{{ app.user.nom|first|upper }}</span>
-            {{ app.user.nom }}
-            <i class="bi bi-chevron-down chevron"></i>
-        </button>
-        <div class="user-dropdown-menu" id="userDropdownMenu" role="menu">
-            <a href="{{ path('app_dashboard') }}" role="menuitem">
-                <i class="bi bi-person-circle"></i>Profil
+            <a href="{{ path('app_home') }}" class="nav-link {% if app.request.attributes.get('_route') == 'app_home' %}active{% endif %}">
+                <i class="bi bi-house me-1"></i>Accueil
             </a>
-            {% if is_granted('ROLE_ADMIN') %}
-            <a href="{{ path('app_dashboard') }}" role="menuitem">
-                <i class="bi bi-speedometer2"></i>Dashboard
+            <a href="{{ path('club_index') }}" class="nav-link {% if app.request.attributes.get('_route') starts with 'club' %}active{% endif %}">
+                <i class="bi bi-collection me-1"></i>Clubs
+            </a>
+            <a href="{{ path('event_index') }}" class="nav-link {% if app.request.attributes.get('_route') starts with 'event' %}active{% endif %}">
+                <i class="bi bi-calendar3 me-1"></i>Evenements
+            </a>
+            
+            {% if is_granted('ROLE_USER') %}
+            <a href="{{ path('app_recruitment_index') }}" class="nav-link {% if app.request.attributes.get('_route') starts with 'app_recruitment' %}active{% endif %}">
+                <i class="bi bi-megaphone me-1"></i>Recrutements
+            </a>
+            <a href="{{ is_granted('ROLE_RESPONSABLE') ? path('app_reclamation_index') : path('app_reclamation_new') }}" class="nav-link {% if app.request.attributes.get('_route') starts with 'app_reclamation' %}active{% endif %}">
+                <i class="bi bi-envelope me-1"></i>Reclamations
+            </a>
+            <a href="{{ is_granted('ROLE_ADMIN') ? path('app_feedback_index') : path('app_feedback_new') }}" class="nav-link {% if app.request.attributes.get('_route') starts with 'app_feedback' %}active{% endif %}">
+                <i class="bi bi-star me-1"></i>Suggestions
             </a>
             {% endif %}
-            {% if is_granted('ROLE_PRESIDENT') %}
-            <a href="{{ path('club_index') }}" role="menuitem">
-                <i class="bi bi-collection-fill"></i>Mes clubs
+
+            {% if is_granted('ROLE_RESPONSABLE') %}
+            <a href="{{ path('app_candidature_index') }}" class="nav-link {% if app.request.attributes.get('_route') starts with 'app_candidature' %}active{% endif %}">
+                <i class="bi bi-file-earmark-person me-1"></i>Candidatures
             </a>
             {% endif %}
-            <div class="user-dropdown-divider"></div>
-            <a href="{{ path('app_logout') }}" class="signout-link" role="menuitem">
-                <i class="bi bi-box-arrow-left"></i>Sign out
+
+            {% if is_granted('ROLE_USER') %}
+            <div class="user-dropdown-wrap ms-2" id="userDropdownWrap">
+                <button class="user-dropdown-btn" id="userDropdownBtn" type="button" aria-expanded="false">
+                    <span class="avatar-sm">{{ app.user.nom|first|upper }}</span>
+                    {{ app.user.nom }}
+                    <i class="bi bi-chevron-down chevron"></i>
+                </button>
+                <div class="user-dropdown-menu" id="userDropdownMenu" role="menu">
+                    <a href="{{ path('app_user_profile') }}" role="menuitem">
+                        <i class="bi bi-person-circle"></i>Mon Profil
+                    </a>
+                    <a href="{{ path('app_dashboard') }}" role="menuitem">
+                        <i class="bi bi-calendar-check"></i>Mes participations
+                    </a>
+                    
+                    {% if is_granted('ROLE_PRESIDENT') %}
+                    <div class="user-dropdown-divider"></div>
+                    <a href="{{ path('club_new') }}" role="menuitem">
+                        <i class="bi bi-plus-circle"></i>Créer un club
+                    </a>
+                    {% endif %}
+
+                    {% if is_granted('ROLE_ADMIN') %}
+                    <div class="user-dropdown-divider"></div>
+                    <a href="{{ path('app_user_index') }}" role="menuitem">
+                        <i class="bi bi-shield-lock"></i>Gérer Utilisateurs
+                    </a>
+                    {% endif %}
+                    
+                    <div class="user-dropdown-divider"></div>
+                    <a href="{{ path('app_logout') }}" class="signout-link" role="menuitem">
+                        <i class="bi bi-box-arrow-left"></i>Déconnexion
+                    </a>
+                </div>
+            </div>
+            {% else %}
+            <a href="{{ path('app_login') }}" class="btn-outline-gold ms-2">
+                <i class="bi bi-box-arrow-in-right me-1"></i>Sign in
             </a>
+            <a href="{{ path('app_register') }}" class="btn-gold ms-2">
+                <i class="bi bi-person-plus me-1"></i>Register
+            </a>
+            {% endif %}
         </div>
-    </div>
-    {% else %}
-    <a href="{{ path('app_login') }}" class="btn-outline-gold ms-2">
-        <i class="bi bi-box-arrow-in-right me-1"></i>Sign in
-    </a>
-    <a href="{{ path('app_register') }}" class="btn-gold ms-2">
-        <i class="bi bi-person-plus me-1"></i>Register
-    </a>
-    {% endif %}
-</div>
     </div>
 </nav>
 

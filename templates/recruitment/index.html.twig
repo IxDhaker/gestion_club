@@ -10,10 +10,12 @@
             <h2 style="font-weight:700; color:#1a1a2e;">Recrutements</h2>
             <p style="color:#888;">Trouvez et postulez aux recrutements des clubs</p>
         </div>
+        {% if is_granted('ROLE_RESPONSABLE') %}
         <a href="{{ path('app_recruitment_new') }}" class="btn" 
            style="background:#4f46e5; color:white; border-radius:25px; padding:10px 24px; font-weight:600;">
             + Nouveau recrutement
         </a>
+        {% endif %}
     </div>
 
     <div class="row g-4">
@@ -40,20 +42,29 @@
                        class="btn btn-sm" style="border:2px solid #4f46e5; color:#4f46e5; border-radius:20px; font-weight:600;">
                         Voir
                     </a>
+                    {% if is_granted('ROLE_RESPONSABLE') %}
                     <a href="{{ path('app_recruitment_edit', {'id': recruitment.id}) }}" 
                        class="btn btn-sm" style="background:#4f46e5; color:white; border-radius:20px; font-weight:600;">
                         Modifier
                     </a>
+                    {% elseif is_granted('ROLE_USER') %}
+                    <a href="{{ path('app_candidature_new') }}?recruitment_id={{ recruitment.id }}" 
+                       class="btn btn-sm" style="background:#4f46e5; color:white; border-radius:20px; font-weight:600;">
+                        Postuler
+                    </a>
+                    {% endif %}
                 </div>
             </div>
         </div>
         {% else %}
         <div class="col-12 text-center py-5">
             <h4 style="color:#888; margin-top:16px;">Aucun recrutement pour le moment</h4>
+            {% if is_granted('ROLE_RESPONSABLE') %}
             <a href="{{ path('app_recruitment_new') }}" class="btn mt-3"
                style="background:#4f46e5; color:white; border-radius:25px; padding:10px 24px; font-weight:600;">
                 Créer le premier recrutement
             </a>
+            {% endif %}
         </div>
         {% endfor %}
     </div>

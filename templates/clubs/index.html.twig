@@ -9,9 +9,11 @@
     <div class="d-flex justify-content-between mb-3">
         <h2>Clubs</h2>
 
+        {% if is_granted('ROLE_PRESIDENT') %}
         <a href="{{ path('club_new') }}" class="btn btn-primary">
-            + Ajouter Club
+            <i class="bi bi-plus-circle me-1"></i>Ajouter Club
         </a>
+        {% endif %}
     </div>
 
     {% for club in clubs %}

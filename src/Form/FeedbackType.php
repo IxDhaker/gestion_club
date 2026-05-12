@@ -19,16 +19,7 @@ class FeedbackType extends AbstractType
             ->add('rating')
             ->add('createdAt', null, [
                 'widget' => 'single_text',
-            ])
-            ->add('user', EntityType::class, [
-                'class' => User::class,
-                'choice_label' => 'id',
-            ])
-            ->add('event', EntityType::class, [
-                'class' => Event::class,
-                'choice_label' => 'id',
-            ])
-        ;
+            ]);
     }
 
     public function configureOptions(OptionsResolver $resolver): void

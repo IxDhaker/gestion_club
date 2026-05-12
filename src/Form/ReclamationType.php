@@ -19,12 +19,7 @@ class ReclamationType extends AbstractType
             ->add('status')
             ->add('createdAt', null, [
                 'widget' => 'single_text',
-            ])
-            ->add('user', EntityType::class, [
-                'class' => User::class,
-                'choice_label' => 'id',
-            ])
-        ;
+            ]);
     }
 
     public function configureOptions(OptionsResolver $resolver): void
