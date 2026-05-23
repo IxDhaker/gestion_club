@@ -64,6 +64,7 @@ class EventController extends AbstractController
             'spotsLeft'       => $spotsLeft,
         ]);
     }
+
     // ─── VALIDATE (ADMIN) ──────────────────────────────────────────────────────
     #[Route('/{id}/validate', name: 'event_validate', methods: ['POST'], requirements: ['id' => '\d+'])]
     #[IsGranted('ROLE_ADMIN')]
@@ -73,6 +74,20 @@ class EventController extends AbstractController
             $event->setStatus('Validé');
             $em->flush();
             $this->addFlash('success', 'Event validated successfully.');
+        }
+
+        return $this->redirectToRoute('event_show', ['id' => $event->getId()]);
+    }
+
+    // ─── REJECT (ADMIN) — Amen ─────────────────────────────────────────────────
+    #[Route('/{id}/reject', name: 'event_reject', methods: ['POST'], requirements: ['id' => '\d+'])]
+    #[IsGranted('ROLE_ADMIN')]
+    public function reject(Request $request, Event $event, EntityManagerInterface $em): Response
+    {
+        if ($this->isCsrfTokenValid('reject'.$event->getId(), $request->request->get('_token'))) {
+            $event->setStatus('Refusé');
+            $em->flush();
+            $this->addFlash('danger', 'Événement refusé.');
         }
 
         return $this->redirectToRoute('event_show', ['id' => $event->getId()]);

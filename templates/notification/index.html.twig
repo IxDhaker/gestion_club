@@ -1,0 +1,71 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Notifications — ClubHub{% endblock %}
+
+{% block body %}
+<div class="container mt-5 mb-5">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 style="font-weight:700; color:#1a1a2e;">Notifications</h2>
+            <p style="color:#888;">Vos dernières notifications</p>
+        </div>
+        {% if notifications|length > 0 %}
+        <form method="post" action="{{ path('app_notification_read_all') }}">
+            <button type="submit" style="background:#4f46e5; color:white; border:none; border-radius:25px; padding:8px 20px; font-weight:600; font-size:0.85rem;">
+                <i class="bi bi-check-all me-1"></i>Tout marquer comme lu
+            </button>
+        </form>
+        {% endif %}
+    </div>
+
+    {% if notifications|length == 0 %}
+    <div class="text-center py-5">
+        <div style="font-size:3rem; color:#ccc; margin-bottom:16px;">
+            <i class="bi bi-bell-slash"></i>
+        </div>
+        <h5 style="color:#888;">Aucune notification pour le moment</h5>
+    </div>
+    {% else %}
+    <div class="d-flex flex-column gap-3">
+        {% for notification in notifications %}
+        <div style="background:white; border-radius:16px; padding:20px 24px; box-shadow:0 2px 12px rgba(0,0,0,0.07); border-left: 4px solid {{ notification.isRead ? '#e5e7eb' : '#4f46e5' }}; display:flex; align-items:center; justify-content:space-between; gap:16px;">
+            
+            <div class="d-flex align-items-center gap-3">
+                <div style="width:40px; height:40px; border-radius:50%; background:{{ notification.isRead ? '#f4f6fb' : '#ede9fe' }}; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                    <i class="bi bi-bell{{ notification.isRead ? '' : '-fill' }}" style="color:{{ notification.isRead ? '#aaa' : '#4f46e5' }};"></i>
+                </div>
+                <div>
+                    <p style="color:#1a1a2e; font-weight:{{ notification.isRead ? '400' : '600' }}; margin:0 0 4px;">
+                        {{ notification.message }}
+                    </p>
+                    <small style="color:#aaa;">
+                        <i class="bi bi-clock me-1"></i>
+                        {{ notification.createdAt|date('d/m/Y H:i') }}
+                    </small>
+                </div>
+            </div>
+
+            <div class="d-flex gap-2">
+                {% if not notification.isRead %}
+                <form method="post" action="{{ path('app_notification_read', {id: notification.id}) }}">
+                    <button type="submit" style="background:#ede9fe; color:#4f46e5; border:none; border-radius:20px; padding:5px 14px; font-size:0.78rem; font-weight:600;">
+                        <i class="bi bi-check me-1"></i>Lu
+                    </button>
+                </form>
+                {% endif %}
+                <form method="post" action="{{ path('app_notification_delete', {id: notification.id}) }}">
+                    <button type="submit" style="background:rgba(224,90,90,.1); color:#c0392b; border:none; border-radius:20px; padding:5px 14px; font-size:0.78rem; font-weight:600;"
+                            onclick="return confirm('Supprimer cette notification ?')">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </form>
+            </div>
+
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

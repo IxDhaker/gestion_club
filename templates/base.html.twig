@@ -201,7 +201,9 @@
                     <a href="{{ path('app_dashboard') }}" role="menuitem">
                         <i class="bi bi-calendar-check"></i>Mes participations
                     </a>
-                    
+                    <a href="{{ path('app_notification_index') }}" role="menuitem">
+                        <i class="bi bi-bell"></i>Notifications
+                    </a>                    
                     {% if is_granted('ROLE_PRESIDENT') %}
                     <div class="user-dropdown-divider"></div>
                     <a href="{{ path('club_new') }}" role="menuitem">
