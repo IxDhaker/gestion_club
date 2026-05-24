@@ -3,12 +3,14 @@
 namespace App\Controller;
 
 use App\Entity\Event;
+use App\Form\EventType;
+use App\Repository\ClubRepository;
 use App\Repository\EventRepository;
 use App\Repository\ParticipationRepository;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpFoundation\Request;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
@@ -16,15 +18,14 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 class EventController extends AbstractController
 {
     public function __construct(
-        private EventRepository         $eventRepository,
+        private EventRepository $eventRepository,
         private ParticipationRepository $participationRepository,
     ) {}
 
-    // ─── LIST ──────────────────────────────────────────────────────────────────
     #[Route('', name: 'event_index', methods: ['GET'])]
     public function index(): Response
     {
-       $events = $this->eventRepository->findBy([], ['dateEvent' => 'ASC']);
+        $events = $this->eventRepository->findBy([], ['dateEvent' => 'ASC']);
 
         $participatingIn = [];
         if ($this->getUser()) {
@@ -35,12 +36,56 @@ class EventController extends AbstractController
         }
 
         return $this->render('events/index.html.twig', [
-            'events'          => $events,
+            'events' => $events,
             'participatingIn' => $participatingIn,
         ]);
     }
 
-    // ─── DETAIL ────────────────────────────────────────────────────────────────
+    #[Route('/new', name: 'event_new', methods: ['GET', 'POST'])]
+    #[IsGranted('ROLE_PRESIDENT')]
+    public function new(Request $request, ClubRepository $clubRepository, EntityManagerInterface $em): Response
+    {
+        $presidentClubs = $clubRepository->findBy(['president' => $this->getUser()]);
+
+        if ($presidentClubs === []) {
+            $this->addFlash('warning', 'Vous devez avoir un club pour creer un evenement.');
+
+            return $this->redirectToRoute('club_index');
+        }
+
+        $event = new Event();
+        $event->setStatus('En attente');
+
+        if (count($presidentClubs) === 1) {
+            $event->setClub($presidentClubs[0]);
+        }
+
+        $form = $this->createForm(EventType::class, $event, [
+            'club_choices' => $presidentClubs,
+            'submit_label' => 'Creer l\'evenement',
+        ]);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            if (!in_array($event->getClub(), $presidentClubs, true)) {
+                throw $this->createAccessDeniedException('Vous ne pouvez pas creer un evenement pour ce club.');
+            }
+
+            $event->setStatus('En attente');
+            $em->persist($event);
+            $em->flush();
+
+            $this->addFlash('success', 'Evenement cree avec succes. Il est en attente de validation.');
+
+            return $this->redirectToRoute('event_show', ['id' => $event->getId()]);
+        }
+
+        return $this->render('events/new.html.twig', [
+            'event' => $event,
+            'form' => $form,
+        ]);
+    }
+
     #[Route('/{id}', name: 'event_show', methods: ['GET'], requirements: ['id' => '\d+'])]
     public function show(Event $event): Response
     {
@@ -53,19 +98,53 @@ class EventController extends AbstractController
         }
 
         $spotsLeft = null;
-        if ($event->getMaxParticipants() !== null) {
+        if (method_exists($event, 'getMaxParticipants') && $event->getMaxParticipants() !== null) {
             $spotsLeft = $event->getMaxParticipants() - count($participants);
         }
 
         return $this->render('events/show.html.twig', [
-            'event'           => $event,
-            'participants'    => $participants,
+            'event' => $event,
+            'participants' => $participants,
             'isParticipating' => $isParticipating,
-            'spotsLeft'       => $spotsLeft,
+            'spotsLeft' => $spotsLeft,
         ]);
     }
 
-    // ─── VALIDATE (ADMIN) ──────────────────────────────────────────────────────
+    #[Route('/{id}/edit', name: 'event_edit', methods: ['GET', 'POST'], requirements: ['id' => '\d+'])]
+    #[IsGranted('ROLE_PRESIDENT')]
+    public function edit(Event $event, Request $request, ClubRepository $clubRepository, EntityManagerInterface $em): Response
+    {
+        $presidentClubs = $clubRepository->findBy(['president' => $this->getUser()]);
+
+        if (!in_array($event->getClub(), $presidentClubs, true)) {
+            throw $this->createAccessDeniedException('Vous ne pouvez modifier que les evenements de vos clubs.');
+        }
+
+        $form = $this->createForm(EventType::class, $event, [
+            'club_choices' => $presidentClubs,
+            'submit_label' => 'Modifier l\'evenement',
+        ]);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            if (!in_array($event->getClub(), $presidentClubs, true)) {
+                throw $this->createAccessDeniedException('Vous ne pouvez pas transferer cet evenement vers ce club.');
+            }
+
+            $event->setStatus('En attente');
+            $em->flush();
+
+            $this->addFlash('success', 'Evenement modifie avec succes. Il repasse en attente de validation.');
+
+            return $this->redirectToRoute('event_show', ['id' => $event->getId()]);
+        }
+
+        return $this->render('events/edit.html.twig', [
+            'event' => $event,
+            'form' => $form,
+        ]);
+    }
+
     #[Route('/{id}/validate', name: 'event_validate', methods: ['POST'], requirements: ['id' => '\d+'])]
     #[IsGranted('ROLE_ADMIN')]
     public function validate(Request $request, Event $event, EntityManagerInterface $em): Response
@@ -73,13 +152,12 @@ class EventController extends AbstractController
         if ($this->isCsrfTokenValid('validate'.$event->getId(), $request->request->get('_token'))) {
             $event->setStatus('Validé');
             $em->flush();
-            $this->addFlash('success', 'Event validated successfully.');
+            $this->addFlash('success', 'Evenement valide avec succes.');
         }
 
         return $this->redirectToRoute('event_show', ['id' => $event->getId()]);
     }
 
-    // ─── REJECT (ADMIN) — Amen ─────────────────────────────────────────────────
     #[Route('/{id}/reject', name: 'event_reject', methods: ['POST'], requirements: ['id' => '\d+'])]
     #[IsGranted('ROLE_ADMIN')]
     public function reject(Request $request, Event $event, EntityManagerInterface $em): Response
@@ -87,7 +165,7 @@ class EventController extends AbstractController
         if ($this->isCsrfTokenValid('reject'.$event->getId(), $request->request->get('_token'))) {
             $event->setStatus('Refusé');
             $em->flush();
-            $this->addFlash('danger', 'Événement refusé.');
+            $this->addFlash('danger', 'Evenement refuse.');
         }
 
         return $this->redirectToRoute('event_show', ['id' => $event->getId()]);

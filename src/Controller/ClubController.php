@@ -203,6 +203,8 @@ class ClubController extends AbstractController
                 $club->setLogo($newFilename);
             }
 
+            $club->setPresident($this->getUser());
+
             $this->em->persist($club);
             $this->em->flush();
 

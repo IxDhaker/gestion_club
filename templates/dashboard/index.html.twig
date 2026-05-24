@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}My Dashboard — ClubHub{% endblock %}
+{% block title %}Dashboard admin - ClubHub{% endblock %}
 
 {% block stylesheets %}
 <style>
@@ -143,6 +143,136 @@
     }
     .empty-state i { font-size: 2.5rem; color: var(--border); margin-bottom: 1rem; display: block; }
     .empty-state p { font-size: .9rem; }
+
+    .admin-dashboard {
+        margin-bottom: 2rem;
+    }
+    .admin-heading {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 1.25rem;
+        margin-bottom: 1rem;
+    }
+    .admin-heading h2 {
+        color: var(--text);
+        font-size: 1.45rem;
+        font-weight: 700;
+        margin: 0;
+    }
+    .admin-heading p {
+        color: var(--muted);
+        font-size: .88rem;
+        margin: .25rem 0 0;
+    }
+    .admin-kpis {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+    .admin-kpi {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 1.25rem;
+        min-height: 136px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+    .admin-kpi-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: .8rem;
+        color: var(--muted);
+        font-size: .78rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+    .admin-kpi-top i {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--accent-soft);
+        color: var(--accent);
+        font-size: 1.05rem;
+    }
+    .admin-kpi-value {
+        color: var(--text);
+        font-size: 2.05rem;
+        font-weight: 700;
+        line-height: 1;
+        margin-top: 1rem;
+    }
+    .admin-kpi-note {
+        color: var(--muted);
+        font-size: .8rem;
+        margin-top: .55rem;
+    }
+    .admin-panels {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 1rem;
+    }
+    .admin-mini-list {
+        padding: 1rem 1.75rem 1.25rem;
+    }
+    .metric-line {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: .75rem 0;
+        border-bottom: 1px solid var(--border);
+        color: var(--muted);
+        font-size: .87rem;
+    }
+    .metric-line:last-child { border-bottom: none; }
+    .metric-line strong {
+        color: var(--text);
+        font-size: .95rem;
+    }
+    .metric-pill {
+        background: var(--accent-soft);
+        color: var(--accent);
+        border-radius: 999px;
+        padding: .2rem .65rem;
+        font-weight: 700;
+        font-size: .78rem;
+        white-space: nowrap;
+    }
+    .progress-soft {
+        height: 8px;
+        border-radius: 999px;
+        background: var(--surface-2);
+        overflow: hidden;
+        margin-top: .65rem;
+    }
+    .progress-soft span {
+        display: block;
+        height: 100%;
+        background: var(--accent);
+        border-radius: inherit;
+    }
+    @media (max-width: 900px) {
+        .dash-header,
+        .admin-heading {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+        .admin-panels {
+            grid-template-columns: 1fr;
+        }
+        .part-row {
+            align-items: flex-start;
+            flex-wrap: wrap;
+        }
+    }
 </style>
 {% endblock %}
 
@@ -157,8 +287,12 @@
         <h2>{{ user.nom }}</h2>
         <p>{{ user.email }}</p>
         <span class="role-badge">
-            {% if 'ROLE_PRESIDENT' in user.roles %}
+            {% if 'ROLE_ADMIN' in user.roles %}
+                <i class="bi bi-shield-lock-fill"></i> Administrateur
+            {% elseif 'ROLE_PRESIDENT' in user.roles %}
                 <i class="bi bi-crown-fill"></i> Club President
+            {% elseif 'ROLE_RESPONSABLE' in user.roles %}
+                <i class="bi bi-person-check-fill"></i> Responsable
             {% else %}
                 <i class="bi bi-mortarboard-fill"></i> Étudiant
             {% endif %}
@@ -167,23 +301,155 @@
 </div>
 
 {# ── Stats ─────────────────────────────────────────────────────────────── #}
+{% if is_granted('ROLE_ADMIN') and adminStats %}
+<section class="admin-dashboard fade-up fade-up-d1">
+    <div class="admin-heading">
+        <div>
+            <h2>Statistiques globales</h2>
+            <p>Vue d'ensemble de la plateforme, des clubs et de l'activite.</p>
+        </div>
+        <a href="{{ path('app_user_index') }}" class="btn-gold" style="font-size:.82rem;padding:.48rem 1.1rem;">
+            <i class="bi bi-people me-1"></i> Gerer utilisateurs
+        </a>
+    </div>
+
+    <div class="admin-kpis">
+        <div class="admin-kpi">
+            <div class="admin-kpi-top">
+                <span>Utilisateurs</span>
+                <i class="bi bi-people"></i>
+            </div>
+            <div>
+                <div class="admin-kpi-value">{{ adminStats.users.total }}</div>
+                <div class="admin-kpi-note">{{ adminStats.users.etudiants }} etudiants, {{ adminStats.users.presidents }} presidents</div>
+            </div>
+        </div>
+        <div class="admin-kpi">
+            <div class="admin-kpi-top">
+                <span>Clubs</span>
+                <i class="bi bi-collection"></i>
+            </div>
+            <div>
+                <div class="admin-kpi-value">{{ adminStats.clubs.total }}</div>
+                <div class="admin-kpi-note">{{ adminStats.clubs.active }} actifs, {{ adminStats.clubs.pending }} en attente</div>
+            </div>
+        </div>
+        <div class="admin-kpi">
+            <div class="admin-kpi-top">
+                <span>Evenements</span>
+                <i class="bi bi-calendar3"></i>
+            </div>
+            <div>
+                <div class="admin-kpi-value">{{ adminStats.events.total }}</div>
+                <div class="admin-kpi-note">{{ adminStats.events.upcoming }} a venir, {{ adminStats.events.validated }} valides</div>
+            </div>
+        </div>
+        <div class="admin-kpi">
+            <div class="admin-kpi-top">
+                <span>Participations</span>
+                <i class="bi bi-check2-circle"></i>
+            </div>
+            <div>
+                <div class="admin-kpi-value">{{ adminStats.activity.participations }}</div>
+                <div class="admin-kpi-note">{{ adminStats.activity.members }} membres de clubs</div>
+            </div>
+        </div>
+        <div class="admin-kpi">
+            <div class="admin-kpi-top">
+                <span>Candidatures</span>
+                <i class="bi bi-file-earmark-person"></i>
+            </div>
+            <div>
+                <div class="admin-kpi-value">{{ adminStats.activity.candidatures }}</div>
+                <div class="admin-kpi-note">{{ adminStats.activity.recruitments }} campagnes de recrutement</div>
+            </div>
+        </div>
+        <div class="admin-kpi">
+            <div class="admin-kpi-top">
+                <span>Suggestions</span>
+                <i class="bi bi-star"></i>
+            </div>
+            <div>
+                <div class="admin-kpi-value">{{ adminStats.support.feedback }}</div>
+                <div class="admin-kpi-note">Note moyenne: {{ adminStats.support.averageRating }}/5</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="admin-panels">
+        <div class="section-card">
+            <div class="section-card-header">
+                <h3><i class="bi bi-collection me-2 text-accent"></i>Etat des clubs</h3>
+                <a href="{{ path('club_index') }}" class="btn-muted" style="font-size:.78rem;padding:.35rem .85rem;">Voir</a>
+            </div>
+            <div class="admin-mini-list">
+                <div class="metric-line">
+                    <span>Activation</span>
+                    <strong>{{ adminStats.clubs.activationRate }}%</strong>
+                </div>
+                <div class="progress-soft">
+                    <span style="width: {{ adminStats.clubs.activationRate }}%;"></span>
+                </div>
+                <div class="metric-line">
+                    <span>Clubs actifs</span>
+                    <span class="metric-pill">{{ adminStats.clubs.active }}</span>
+                </div>
+                <div class="metric-line">
+                    <span>Demandes en attente</span>
+                    <span class="metric-pill">{{ adminStats.clubs.pending }}</span>
+                </div>
+                <div class="metric-line">
+                    <span>Demandes refusees</span>
+                    <span class="metric-pill">{{ adminStats.clubs.refused }}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-card">
+            <div class="section-card-header">
+                <h3><i class="bi bi-calendar3 me-2 text-accent"></i>Etat des evenements</h3>
+                <a href="{{ path('event_index') }}" class="btn-muted" style="font-size:.78rem;padding:.35rem .85rem;">Voir</a>
+            </div>
+            <div class="admin-mini-list">
+                <div class="metric-line">
+                    <span>Evenements valides</span>
+                    <span class="metric-pill">{{ adminStats.events.validated }}</span>
+                </div>
+                <div class="metric-line">
+                    <span>Evenements en attente</span>
+                    <span class="metric-pill">{{ adminStats.events.pending }}</span>
+                </div>
+                <div class="metric-line">
+                    <span>Evenements refuses</span>
+                    <span class="metric-pill">{{ adminStats.events.refused }}</span>
+                </div>
+                <div class="metric-line">
+                    <span>Reclamations ouvertes</span>
+                    <span class="metric-pill">{{ adminStats.support.openReclamations }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endif %}
+
 <div class="stats-strip fade-up fade-up-d1">
     <div class="stat-box">
         <i class="bi bi-calendar-check stat-icon"></i>
         <span class="stat-num">{{ participations|length }}</span>
-        <span class="stat-lbl">Events Joined</span>
+        <span class="stat-lbl">Participations</span>
     </div>
     <div class="stat-box">
         <i class="bi bi-clock-history stat-icon"></i>
         <span class="stat-num">
-            {{ participations|filter(p => p.event.date is defined and p.event.date > date())|length }}
+            {{ upcomingParticipations }}
         </span>
-        <span class="stat-lbl">Upcoming</span>
+        <span class="stat-lbl">A venir</span>
     </div>
     <div class="stat-box">
         <i class="bi bi-person-badge stat-icon"></i>
         <span class="stat-num">
-            {% if 'ROLE_PRESIDENT' in user.roles %}P{% else %}E{% endif %}
+            {% if 'ROLE_ADMIN' in user.roles %}A{% elseif 'ROLE_PRESIDENT' in user.roles %}P{% elseif 'ROLE_RESPONSABLE' in user.roles %}R{% else %}E{% endif %}
         </span>
         <span class="stat-lbl">Role</span>
     </div>
@@ -192,18 +458,18 @@
 {# ── My Participations ─────────────────────────────────────────────────── #}
 <div class="section-card fade-up fade-up-d2">
     <div class="section-card-header">
-        <h3><i class="bi bi-calendar3 me-2 text-accent"></i>My Event Registrations</h3>
+        <h3><i class="bi bi-calendar3 me-2 text-accent"></i>Mes inscriptions aux evenements</h3>
         <a href="{{ path('event_index') }}" class="btn-gold" style="font-size:.8rem;padding:.4rem 1rem;">
-            Browse Events
+            Voir les evenements
         </a>
     </div>
 
     {% if participations is empty %}
         <div class="empty-state">
             <i class="bi bi-calendar-x"></i>
-            <p>You haven't registered for any events yet.</p>
+            <p>Vous n'etes inscrit a aucun evenement pour le moment.</p>
             <a href="{{ path('event_index') }}" class="btn-gold mt-3" style="display:inline-block;padding:.55rem 1.4rem;font-size:.85rem;">
-                Discover Events
+                Decouvrir les evenements
             </a>
         </div>
     {% else %}
@@ -211,16 +477,18 @@
         <div class="part-row">
             <div class="part-icon"><i class="bi bi-calendar-event"></i></div>
             <div class="part-info">
-                <strong>{{ p.event.name }}</strong>
-                <span>{{ p.event.location ?? 'Location TBD' }}</span>
+                <strong>{{ p.event ? p.event.titre : 'Evenement supprime' }}</strong>
+                <span>{{ p.event ? p.event.lieu : 'Lieu indisponible' }}</span>
             </div>
             <div class="part-date">
                 <i class="bi bi-clock me-1"></i>
-                Registered {{ p.registeredAt|date('d M Y') }}
+                Inscrit le {{ p.dateParticipation|date('d M Y') }}
             </div>
-            <a href="{{ path('event_show', {id: p.event.id}) }}" class="btn-muted" style="font-size:.78rem;padding:.35rem .85rem;white-space:nowrap;">
-                View
-            </a>
+            {% if p.event %}
+                <a href="{{ path('event_show', {id: p.event.id}) }}" class="btn-muted" style="font-size:.78rem;padding:.35rem .85rem;white-space:nowrap;">
+                    Voir
+                </a>
+            {% endif %}
         </div>
         {% endfor %}
     {% endif %}

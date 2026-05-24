@@ -39,7 +39,7 @@ class ParticipationController extends AbstractController
         }
 
         // Check available spots
-        if ($event->getMaxParticipants() !== null) {
+        if (method_exists($event, 'getMaxParticipants') && $event->getMaxParticipants() !== null) {
             $current = $this->participationRepository->count(['event' => $event]);
             if ($current >= $event->getMaxParticipants()) {
                 $this->addFlash('danger', 'Sorry, this event is fully booked.');
@@ -50,12 +50,13 @@ class ParticipationController extends AbstractController
         $participation = new Participation();
         $participation->setEvent($event);
         $participation->setUser($user);
-        $participation->setRegisteredAt(new \DateTimeImmutable());
+        $participation->setDateParticipation(new \DateTime());
+        $participation->setStatus('Inscrit');
 
         $this->em->persist($participation);
         $this->em->flush();
 
-        $this->addFlash('success', 'You are now registered for "' . $event->getName() . '"!');
+        $this->addFlash('success', 'Vous etes maintenant inscrit a "' . $event->getTitre() . '".');
         return $this->redirectToRoute('event_show', ['id' => $event->getId()]);
     }
 
@@ -88,7 +89,7 @@ class ParticipationController extends AbstractController
 
     // ─── PARTICIPANTS LIST ──────────────────────────────────────────────────────
     #[Route('/{id}/participants', name: 'event_participants', methods: ['GET'], requirements: ['id' => '\d+'])]
-    #[IsGranted('ROLE_USER')]
+    #[IsGranted('ROLE_RESPONSABLE')]
     public function participants(Event $event): Response
     {
         $participants = $this->participationRepository->findBy(['event' => $event]);
