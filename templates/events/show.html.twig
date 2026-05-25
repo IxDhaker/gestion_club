@@ -62,10 +62,23 @@
                 {% endif %}
 
                 {% if is_granted('ROLE_USER') %}
-                    {% if isParticipating %}
-                        <button style="background:#f4f6fb; color:#888; border:1px solid #e5e7eb; border-radius:8px; padding:8px 20px; font-weight:600;" disabled>
-                            <i class="bi bi-check-circle-fill me-1"></i>Inscrit
-                        </button>
+                    {% if userParticipation %}
+                        {% if userParticipation.status == 'En attente' %}
+                            <button style="background:#fef9c3; color:#92400e; border:1px solid #fde68a; border-radius:8px; padding:8px 20px; font-weight:600;" disabled>
+                                <i class="bi bi-hourglass-split me-1"></i>En attente
+                            </button>
+                        {% elseif userParticipation.status == 'Refuse' %}
+                            <form method="post" action="{{ path('event_participate', {id: event.id}) }}">
+                                <input type="hidden" name="_token" value="{{ csrf_token('participate_' ~ event.id) }}">
+                                <button type="submit" style="background:#4f46e5; color:white; border:none; border-radius:8px; padding:8px 20px; font-weight:600;">
+                                    <i class="bi bi-arrow-repeat me-1"></i>Renvoyer la demande
+                                </button>
+                            </form>
+                        {% else %}
+                            <button style="background:#f4f6fb; color:#888; border:1px solid #e5e7eb; border-radius:8px; padding:8px 20px; font-weight:600;" disabled>
+                                <i class="bi bi-check-circle-fill me-1"></i>Inscrit
+                            </button>
+                        {% endif %}
                     {% elseif spotsLeft is not null and spotsLeft == 0 %}
                         <button style="background:#f4f6fb; color:#888; border:1px solid #e5e7eb; border-radius:8px; padding:8px 20px; font-weight:600;" disabled>
                             <i class="bi bi-x-circle me-1"></i>Complet
@@ -88,6 +101,13 @@
                     <a href="{{ path('event_participants', {id: event.id}) }}"
                        style="background:transparent; color:#4f46e5; border:1px solid #4f46e5; border-radius:8px; padding:6px 16px; font-weight:600; font-size:0.8rem; display:inline-block;">
                         <i class="bi bi-list-ul me-1"></i>Voir les participants
+                    </a>
+                {% endif %}
+
+                {% if is_granted('ROLE_PRESIDENT') and event.club and event.club.president == app.user %}
+                    <a href="{{ path('president_participations') }}"
+                       style="background:transparent; color:#4f46e5; border:1px solid #4f46e5; border-radius:8px; padding:6px 16px; font-weight:600; font-size:0.8rem; display:inline-block;">
+                        <i class="bi bi-person-check me-1"></i>Gerer les demandes
                     </a>
                 {% endif %}
 

@@ -3,11 +3,14 @@
 namespace App\Controller;
 
 use App\Entity\User;
+use App\Form\UserProfileType;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Form\FormError;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
@@ -33,12 +36,57 @@ final class UserController extends AbstractController
 
     #[Route('/profile', name: 'app_user_profile', methods: ['GET', 'POST'])]
     #[IsGranted('ROLE_USER')]
-    public function profile(Request $request, EntityManagerInterface $entityManager): Response
+    public function profile(
+        Request $request,
+        EntityManagerInterface $entityManager,
+        UserRepository $userRepository,
+        UserPasswordHasherInterface $passwordHasher
+    ): Response
     {
+        /** @var User $user */
         $user = $this->getUser();
+        $originalEmail = $user->getEmail();
+        $originalNom = $user->getNom();
+
+        $form = $this->createForm(UserProfileType::class, $user);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted()) {
+            $emailOwner = $userRepository->findOneBy(['email' => $user->getEmail()]);
+            if ($emailOwner && $emailOwner !== $user) {
+                $form->get('email')->addError(new FormError('Cet email est deja utilise.'));
+            }
+
+            $nameOwner = $userRepository->findOneBy(['nom' => $user->getNom()]);
+            if ($nameOwner && $nameOwner !== $user) {
+                $form->get('nom')->addError(new FormError('Ce nom est deja utilise.'));
+            }
+
+            $newPassword = $form->get('plainPassword')->getData();
+            $currentPassword = $form->get('currentPassword')->getData();
+
+            if ($newPassword && !$passwordHasher->isPasswordValid($user, (string) $currentPassword)) {
+                $form->get('currentPassword')->addError(new FormError('Mot de passe actuel incorrect.'));
+            }
+
+            if ($form->isValid()) {
+                if ($newPassword) {
+                    $user->setPassword($passwordHasher->hashPassword($user, $newPassword));
+                }
+
+                $entityManager->flush();
+
+                $this->addFlash('success', 'Votre profil a ete mis a jour.');
+                return $this->redirectToRoute('app_user_profile', [], Response::HTTP_SEE_OTHER);
+            }
+
+            $user->setEmail((string) $originalEmail);
+            $user->setNom((string) $originalNom);
+        }
 
         return $this->render('user/profile.html.twig', [
             'user' => $user,
+            'profileForm' => $form,
         ]);
     }
 

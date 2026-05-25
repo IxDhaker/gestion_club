@@ -11,6 +11,9 @@
             <p style="color:#888;">Inscrivez-vous aux evenements et participez a la vie du campus.</p>
         </div>
         {% if is_granted('ROLE_PRESIDENT') %}
+            <a href="{{ path('president_participations') }}" class="btn-outline-gold">
+                <i class="bi bi-person-check me-1"></i>Participations recues
+            </a>
             <a href="{{ path('event_new') }}" class="btn-gold">
                 <i class="bi bi-calendar-plus me-1"></i>Creer un evenement
             </a>

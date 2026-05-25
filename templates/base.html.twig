@@ -212,6 +212,9 @@
                     <a href="{{ path('club_new') }}" role="menuitem">
                         <i class="bi bi-plus-circle"></i>Créer un club
                     </a>
+                    <a href="{{ path('president_participations') }}" role="menuitem">
+                        <i class="bi bi-person-check"></i>Participations recues
+                    </a>
                     {% endif %}
 
                     {% if is_granted('ROLE_ADMIN') %}
