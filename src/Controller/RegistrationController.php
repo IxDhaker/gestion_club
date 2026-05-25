@@ -35,6 +35,7 @@ class RegistrationController extends AbstractController
             $user->setPassword($userPasswordHasher->hashPassword($user, $plainPassword));
 
             // Assign the chosen role
+            /** @var string $selectedRole */
             $selectedRole = $form->get('role')->getData();
             $user->setRoles([$selectedRole]);
 

@@ -62,7 +62,9 @@ final class UserController extends AbstractController
                 $form->get('nom')->addError(new FormError('Ce nom est deja utilise.'));
             }
 
+            /** @var string|null $newPassword */
             $newPassword = $form->get('plainPassword')->getData();
+            /** @var string|null $currentPassword */
             $currentPassword = $form->get('currentPassword')->getData();
 
             if ($newPassword && !$passwordHasher->isPasswordValid($user, (string) $currentPassword)) {
@@ -95,7 +97,7 @@ final class UserController extends AbstractController
     #[IsGranted('ROLE_ADMIN')]
     public function changeRole(Request $request, User $user, EntityManagerInterface $em): Response
     {
-        if (!$this->isCsrfTokenValid('change_role'.$user->getId(), $request->getPayload()->getString('_token'))) {
+        if (!$this->isCsrfTokenValid('change_role'.$user->getId(), (string) $request->request->get('_token'))) {
             $this->addFlash('danger', 'Token CSRF invalide.');
             return $this->redirectToRoute('app_user_index');
         }
@@ -131,7 +133,7 @@ final class UserController extends AbstractController
             return $this->redirectToRoute('app_user_index');
         }
 
-        if ($this->isCsrfTokenValid('delete'.$user->getId(), $request->getPayload()->getString('_token'))) {
+        if ($this->isCsrfTokenValid('delete'.$user->getId(), (string) $request->request->get('_token'))) {
             $entityManager->remove($user);
             $entityManager->flush();
         }

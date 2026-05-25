@@ -29,8 +29,9 @@ final class CandidatureController extends AbstractController
     public function new(Request $request, EntityManagerInterface $entityManager): Response
     {
         $candidature = new Candidature();
-        // Set current user and date
-        $candidature->setUser($this->getUser());
+        /** @var \App\Entity\User|null $user */
+        $user = $this->getUser();
+        $candidature->setUser($user);
         $candidature->setDateCandidature(new \DateTime());
         $candidature->setStatus('En attente');
         
@@ -73,7 +74,7 @@ final class CandidatureController extends AbstractController
     #[IsGranted('ROLE_RESPONSABLE')]
     public function delete(Request $request, Candidature $candidature, EntityManagerInterface $entityManager): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$candidature->getId(), $request->getPayload()->getString('_token'))) {
+        if ($this->isCsrfTokenValid('delete'.$candidature->getId(), (string) $request->request->get('_token'))) {
             $entityManager->remove($candidature);
             $entityManager->flush();
         }

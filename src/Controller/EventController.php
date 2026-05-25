@@ -102,11 +102,12 @@ class EventController extends AbstractController
 
         $spotsLeft = null;
         if (method_exists($event, 'getMaxParticipants') && $event->getMaxParticipants() !== null) {
-            $reservedPlaces = $this->participationRepository->countByEventAndStatuses($event, [
+            $reservedPlaces = (int) $this->participationRepository->countByEventAndStatuses($event, [
                 'En attente',
                 'Inscrit',
             ]);
-            $spotsLeft = $event->getMaxParticipants() - $reservedPlaces;
+            /** @phpstan-ignore-next-line */
+            $spotsLeft = (int) $event->getMaxParticipants() - $reservedPlaces;
         }
 
         return $this->render('events/show.html.twig', [
@@ -157,7 +158,7 @@ class EventController extends AbstractController
     #[IsGranted('ROLE_ADMIN')]
     public function validate(Request $request, Event $event, EntityManagerInterface $em): Response
     {
-        if ($this->isCsrfTokenValid('validate'.$event->getId(), $request->request->get('_token'))) {
+        if ($this->isCsrfTokenValid('validate'.$event->getId(), (string) $request->request->get('_token'))) {
             $event->setStatus('Validé');
             $em->flush();
             $this->addFlash('success', 'Evenement valide avec succes.');
@@ -170,7 +171,7 @@ class EventController extends AbstractController
     #[IsGranted('ROLE_ADMIN')]
     public function reject(Request $request, Event $event, EntityManagerInterface $em): Response
     {
-        if ($this->isCsrfTokenValid('reject'.$event->getId(), $request->request->get('_token'))) {
+        if ($this->isCsrfTokenValid('reject'.$event->getId(), (string) $request->request->get('_token'))) {
             $event->setStatus('Refusé');
             $em->flush();
             $this->addFlash('danger', 'Evenement refuse.');

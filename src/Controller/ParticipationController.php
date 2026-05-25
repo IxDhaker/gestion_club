@@ -58,11 +58,12 @@ class ParticipationController extends AbstractController
     #[IsGranted('ROLE_USER')]
     public function participate(Event $event, Request $request): Response
     {
-        if (!$this->isCsrfTokenValid('participate_' . $event->getId(), $request->request->get('_token'))) {
+        if (!$this->isCsrfTokenValid('participate_' . $event->getId(), (string) $request->request->get('_token'))) {
             $this->addFlash('danger', 'Invalid CSRF token.');
             return $this->redirectToRoute('event_show', ['id' => $event->getId()]);
         }
 
+        /** @var User|null $user */
         $user = $this->getUser();
 
         $existing = $this->participationRepository->findOneBy(['event' => $event, 'user' => $user]);
@@ -117,7 +118,7 @@ class ParticipationController extends AbstractController
     {
         $this->denyAccessUnlessPresidentOwnsParticipation($participation);
 
-        if (!$this->isCsrfTokenValid('accept_participation_' . $participation->getId(), $request->request->get('_token'))) {
+        if (!$this->isCsrfTokenValid('accept_participation_' . $participation->getId(), (string) $request->request->get('_token'))) {
             $this->addFlash('danger', 'Token CSRF invalide.');
             return $this->redirectToRoute('president_participations');
         }
@@ -136,7 +137,7 @@ class ParticipationController extends AbstractController
     {
         $this->denyAccessUnlessPresidentOwnsParticipation($participation);
 
-        if (!$this->isCsrfTokenValid('refuse_participation_' . $participation->getId(), $request->request->get('_token'))) {
+        if (!$this->isCsrfTokenValid('refuse_participation_' . $participation->getId(), (string) $request->request->get('_token'))) {
             $this->addFlash('danger', 'Token CSRF invalide.');
             return $this->redirectToRoute('president_participations');
         }
@@ -154,7 +155,7 @@ class ParticipationController extends AbstractController
     #[IsGranted('ROLE_USER')]
     public function cancel(Event $event, Request $request): Response
     {
-        if (!$this->isCsrfTokenValid('cancel_' . $event->getId(), $request->request->get('_token'))) {
+        if (!$this->isCsrfTokenValid('cancel_' . $event->getId(), (string) $request->request->get('_token'))) {
             $this->addFlash('danger', 'Invalid CSRF token.');
             return $this->redirectToRoute('event_show', ['id' => $event->getId()]);
         }

@@ -36,6 +36,9 @@ class ParticipationRepository extends ServiceEntityRepository
         ;
     }
 
+    /**
+     * @param array<string> $statuses
+     */
     public function countByEventAndStatuses(Event $event, array $statuses): int
     {
         return (int) $this->createQueryBuilder('p')

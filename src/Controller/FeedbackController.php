@@ -33,7 +33,9 @@ final class FeedbackController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $feedback->setUser($this->getUser());
+            /** @var \App\Entity\User|null $user */
+            $user = $this->getUser();
+            $feedback->setUser($user);
             $entityManager->persist($feedback);
             $entityManager->flush();
 
@@ -78,7 +80,7 @@ final class FeedbackController extends AbstractController
     #[IsGranted('ROLE_ADMIN')]
     public function delete(Request $request, Feedback $feedback, EntityManagerInterface $entityManager): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$feedback->getId(), $request->getPayload()->getString('_token'))) {
+        if ($this->isCsrfTokenValid('delete'.$feedback->getId(), (string) $request->request->get('_token'))) {
             $entityManager->remove($feedback);
             $entityManager->flush();
         }
