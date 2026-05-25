@@ -1,0 +1,254 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Administration des Clubs{% endblock %}
+
+{% block stylesheets %}
+<style>
+/* ── Header ── */
+.admin-header { background: linear-gradient(135deg, #1a1a2e 0%, #2d2060 100%); border-radius: 16px; padding: 2rem 2.5rem; margin-bottom: 2rem; color: white; }
+.admin-header h1 { font-size: 1.7rem; font-weight: 700; margin: 0 0 .25rem; }
+.admin-header p  { font-size: .9rem; opacity: .75; margin: 0; }
+
+/* ── Stats chips ── */
+.stats-row { display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 1.4rem; }
+.stat-card { background: rgba(255,255,255,.13); border: 1px solid rgba(255,255,255,.18); border-radius: 12px; padding: .7rem 1.4rem; min-width: 100px; text-align: center; }
+.stat-card .val { font-size: 1.6rem; font-weight: 800; line-height: 1; }
+.stat-card .lbl { font-size: .72rem; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; opacity: .75; margin-top: .2rem; }
+.stat-card.actif      { border-color: rgba(90,184,138,.5);  background: rgba(90,184,138,.15); }
+.stat-card.attente    { border-color: rgba(245,158,11,.5);  background: rgba(245,158,11,.12); }
+.stat-card.inactif    { border-color: rgba(150,150,150,.4); background: rgba(150,150,150,.1); }
+.stat-card.refuse     { border-color: rgba(224,90,90,.5);   background: rgba(224,90,90,.12); }
+
+/* ── Filter tabs ── */
+.filter-tabs { display: flex; gap: .5rem; flex-wrap: wrap; margin-bottom: 1.25rem; }
+.filter-tab { padding: .4rem 1.1rem; border-radius: 20px; font-size: .8rem; font-weight: 600; border: 1px solid #e5e7eb; background: white; color: #888; cursor: pointer; transition: all .15s; }
+.filter-tab.active, .filter-tab:hover { background: #4f46e5; color: white; border-color: #4f46e5; }
+
+/* ── Table ── */
+.clubs-table-wrap { background: white; border-radius: 16px; box-shadow: 0 2px 12px rgba(0,0,0,.07); overflow: hidden; }
+.clubs-table-wrap table { margin: 0; }
+.clubs-table-wrap thead th { background: #f4f6fb; font-size: .74rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: #888; padding: 1rem 1.2rem; border-bottom: 1px solid #e5e7eb; }
+.clubs-table-wrap tbody td { padding: .9rem 1.2rem; vertical-align: middle; border-bottom: 1px solid #f0f0f6; }
+.clubs-table-wrap tbody tr:last-child td { border-bottom: none; }
+.clubs-table-wrap tbody tr:hover { background: #fafbff; }
+tr[data-status] { display: table-row; }
+
+/* ── Status badge ── */
+.status-badge { display: inline-flex; align-items: center; gap: .35rem; font-size: .73rem; font-weight: 700; text-transform: uppercase; padding: .3rem .8rem; border-radius: 20px; white-space: nowrap; }
+.status-actif    { background: rgba(90,184,138,.12);  color: #2d8a5e; border: 1px solid rgba(90,184,138,.3); }
+.status-attente  { background: rgba(245,158,11,.1);   color: #b45309; border: 1px solid rgba(245,158,11,.3); }
+.status-inactif  { background: #f4f6fb;               color: #888;    border: 1px solid #e5e7eb; }
+.status-refuse   { background: rgba(224,90,90,.1);    color: #c0392b; border: 1px solid rgba(224,90,90,.25); }
+
+/* ── Club info ── */
+.club-logo-sm { width: 42px; height: 42px; object-fit: cover; border-radius: 10px; border: 1px solid #e5e7eb; }
+.club-logo-placeholder { width: 42px; height: 42px; border-radius: 10px; background: #ede9fe; display: flex; align-items: center; justify-content: center; color: #4f46e5; font-weight: 700; font-size: 1rem; border: 1px solid #c4b5fd; flex-shrink: 0; }
+.club-info { display: flex; align-items: center; gap: .85rem; }
+.club-name  { font-weight: 700; color: #1a1a2e; font-size: .92rem; }
+.club-domain { font-size: .78rem; color: #888; margin-top: .1rem; }
+
+/* ── Action buttons ── */
+.btn-activate { background: rgba(90,184,138,.12); color: #2d8a5e; border: 1px solid rgba(90,184,138,.3); border-radius: 20px; padding: .35rem .9rem; font-size: .78rem; font-weight: 700; cursor: pointer; transition: all .2s; white-space: nowrap; }
+.btn-activate:hover { background: #5ab88a; color: white; }
+.btn-suspend  { background: rgba(245,158,11,.1); color: #b45309; border: 1px solid rgba(245,158,11,.3); border-radius: 20px; padding: .35rem .9rem; font-size: .78rem; font-weight: 700; cursor: pointer; transition: all .2s; white-space: nowrap; }
+.btn-suspend:hover { background: #f59e0b; color: white; }
+.btn-refuse   { background: rgba(224,90,90,.1); color: #c0392b; border: 1px solid rgba(224,90,90,.25); border-radius: 20px; padding: .35rem .9rem; font-size: .78rem; font-weight: 700; cursor: pointer; transition: all .2s; white-space: nowrap; }
+.btn-refuse:hover { background: #e05a5a; color: white; }
+.btn-view { background: #f4f6fb; color: #4f46e5; border: 1px solid #e5e7eb; border-radius: 20px; padding: .35rem .85rem; font-size: .78rem; font-weight: 600; text-decoration: none; transition: all .2s; white-space: nowrap; display: inline-flex; align-items: center; gap: .3rem; }
+.btn-view:hover { background: #ede9fe; border-color: #c4b5fd; }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="container mt-4 fade-up">
+
+    {# ── Header ── #}
+    <div class="admin-header mb-0">
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+            <div>
+                <h1><i class="bi bi-collection-fill me-2"></i>Administration des Clubs</h1>
+                <p>Activer, suspendre ou refuser les clubs. Tout en un seul endroit.</p>
+            </div>
+            <a href="{{ path('club_index') }}" class="btn-view">
+                <i class="bi bi-eye"></i>Vue publique
+            </a>
+        </div>
+        <div class="stats-row">
+            <div class="stat-card actif">
+                <div class="val">{{ stats['Actif'] }}</div>
+                <div class="lbl">Actifs</div>
+            </div>
+            <div class="stat-card attente">
+                <div class="val">{{ stats['En attente'] }}</div>
+                <div class="lbl">En attente</div>
+            </div>
+            <div class="stat-card inactif">
+                <div class="val">{{ stats['Inactif'] }}</div>
+                <div class="lbl">Suspendus</div>
+            </div>
+            <div class="stat-card refuse">
+                <div class="val">{{ stats['Refusé'] }}</div>
+                <div class="lbl">Refusés</div>
+            </div>
+            <div class="stat-card" style="border-color:rgba(79,70,229,.4);background:rgba(79,70,229,.1)">
+                <div class="val">{{ clubs|length }}</div>
+                <div class="lbl">Total</div>
+            </div>
+        </div>
+    </div>
+
+    {# ── Filter tabs ── #}
+    <div class="filter-tabs mt-3 fade-up fade-up-d1">
+        <button class="filter-tab active" onclick="filterClubs('all', this)">
+            <i class="bi bi-list me-1"></i>Tous ({{ clubs|length }})
+        </button>
+        <button class="filter-tab" onclick="filterClubs('En attente', this)">
+            <i class="bi bi-hourglass-split me-1"></i>En attente ({{ stats['En attente'] }})
+        </button>
+        <button class="filter-tab" onclick="filterClubs('Actif', this)">
+            <i class="bi bi-check-circle me-1"></i>Actifs ({{ stats['Actif'] }})
+        </button>
+        <button class="filter-tab" onclick="filterClubs('Inactif', this)">
+            <i class="bi bi-pause-circle me-1"></i>Suspendus ({{ stats['Inactif'] }})
+        </button>
+        <button class="filter-tab" onclick="filterClubs('Refusé', this)">
+            <i class="bi bi-x-circle me-1"></i>Refusés ({{ stats['Refusé'] }})
+        </button>
+    </div>
+
+    {# ── Table ── #}
+    <div class="clubs-table-wrap fade-up fade-up-d2">
+        <table class="table mb-0" id="clubsTable">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Club</th>
+                    <th>Domaine</th>
+                    <th>Président</th>
+                    <th>Statut</th>
+                    <th style="text-align:right">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for club in clubs %}
+                <tr data-status="{{ club.status }}">
+                    <td style="color:#aaa;font-size:.8rem">{{ club.id }}</td>
+                    <td>
+                        <div class="club-info">
+                            {% if club.logo %}
+                                <img src="{{ asset('uploads/logos/' ~ club.logo) }}" alt="{{ club.nom }}" class="club-logo-sm">
+                            {% else %}
+                                <div class="club-logo-placeholder">{{ club.nom|first|upper }}</div>
+                            {% endif %}
+                            <div>
+                                <div class="club-name">{{ club.nom }}</div>
+                                <div class="club-domain">{{ club.domaine }}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <span style="font-size:.82rem;background:#f4f6fb;border:1px solid #e5e7eb;border-radius:8px;padding:.2rem .6rem;color:#555;font-weight:600">
+                            {{ club.domaine }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if club.president %}
+                            <div style="display:flex;align-items:center;gap:.5rem">
+                                <div style="width:28px;height:28px;border-radius:50%;background:#ede9fe;color:#4f46e5;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.8rem;border:1px solid #c4b5fd">
+                                    {{ club.president.nom|first|upper }}
+                                </div>
+                                <span style="font-size:.85rem;font-weight:500;color:#374151">{{ club.president.nom }}</span>
+                            </div>
+                        {% else %}
+                            <span style="color:#aaa;font-size:.82rem;font-style:italic">—</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% set s = club.status %}
+                        {% if s == 'Actif' %}
+                            <span class="status-badge status-actif"><i class="bi bi-check-circle-fill"></i>Actif</span>
+                        {% elseif s == 'En attente' %}
+                            <span class="status-badge status-attente"><i class="bi bi-hourglass-split"></i>En attente</span>
+                        {% elseif s == 'Inactif' %}
+                            <span class="status-badge status-inactif"><i class="bi bi-pause-circle"></i>Suspendu</span>
+                        {% elseif s == 'Refusé' %}
+                            <span class="status-badge status-refuse"><i class="bi bi-x-circle-fill"></i>Refusé</span>
+                        {% else %}
+                            <span class="status-badge status-inactif">{{ s }}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div style="display:flex;gap:.4rem;justify-content:flex-end;align-items:center;flex-wrap:wrap">
+
+                            <a href="{{ path('club_show', {'id': club.id}) }}" class="btn-view" title="Voir le club">
+                                <i class="bi bi-eye"></i>
+                            </a>
+
+                            {# Activer si En attente ou Suspendu #}
+                            {% if club.status in ['En attente', 'Inactif', 'Refusé'] %}
+                            <form method="post" action="{{ path('club_activate', {'id': club.id}) }}"
+                                  onsubmit="return confirm('Activer « {{ club.nom|e('js') }} » ?');">
+                                <input type="hidden" name="_token" value="{{ csrf_token('activate' ~ club.id) }}">
+                                <button class="btn-activate" type="submit">
+                                    <i class="bi bi-check-circle me-1"></i>Activer
+                                </button>
+                            </form>
+                            {% endif %}
+
+                            {# Suspendre si Actif ou En attente #}
+                            {% if club.status in ['Actif', 'En attente'] %}
+                            <form method="post" action="{{ path('club_suspend', {'id': club.id}) }}"
+                                  onsubmit="return confirm('Suspendre « {{ club.nom|e('js') }} » ?');">
+                                <button class="btn-suspend" type="submit">
+                                    <i class="bi bi-pause-circle me-1"></i>Suspendre
+                                </button>
+                            </form>
+                            {% endif %}
+
+                            {# Refuser si En attente #}
+                            {% if club.status == 'En attente' %}
+                            <form method="post" action="{{ path('club_refuse', {'id': club.id}) }}"
+                                  onsubmit="return confirm('Refuser « {{ club.nom|e('js') }} » ?');">
+                                <input type="hidden" name="_token" value="{{ csrf_token('refuse' ~ club.id) }}">
+                                <button class="btn-refuse" type="submit">
+                                    <i class="bi bi-x-circle me-1"></i>Refuser
+                                </button>
+                            </form>
+                            {% endif %}
+
+                        </div>
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="6" style="text-align:center;color:#aaa;padding:3rem">
+                        <i class="bi bi-collection" style="font-size:2rem;display:block;margin-bottom:.5rem"></i>
+                        Aucun club enregistré
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+function filterClubs(status, tabEl) {
+    // update tabs
+    document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+    tabEl.classList.add('active');
+
+    // filter rows
+    document.querySelectorAll('#clubsTable tbody tr[data-status]').forEach(row => {
+        if (status === 'all') {
+            row.style.display = '';
+        } else {
+            row.style.display = row.dataset.status === status ? '' : 'none';
+        }
+    });
+}
+</script>
+{% endblock %}

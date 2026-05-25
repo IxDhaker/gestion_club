@@ -1,42 +1,200 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Gestion des utilisateurs{% endblock %}
+{% block title %}Gestion des utilisateurs — Admin{% endblock %}
+
+{% block stylesheets %}
+<style>
+.admin-header { background: linear-gradient(135deg,#4f46e5 0%,#7c3aed 100%); border-radius: 16px; padding: 2rem 2.5rem; margin-bottom: 2rem; color: white; }
+.admin-header h1 { font-size: 1.7rem; font-weight: 700; margin: 0 0 .25rem; }
+.admin-header p  { font-size: .92rem; opacity: .85; margin: 0; }
+.admin-stats { display: flex; gap: 1.2rem; margin-top: 1.2rem; flex-wrap: wrap; }
+.admin-stat { background: rgba(255,255,255,.18); border-radius: 10px; padding: .5rem 1.1rem; font-size: .82rem; font-weight: 600; }
+.admin-stat span { font-size: 1.2rem; font-weight: 700; display: block; }
+
+.users-table-wrap { background: white; border-radius: 16px; box-shadow: 0 2px 12px rgba(0,0,0,.07); overflow: hidden; }
+.users-table-wrap table { margin: 0; }
+.users-table-wrap thead th { background: #f4f6fb; font-size: .75rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: #888; padding: 1rem 1.2rem; border-bottom: 1px solid #e5e7eb; }
+.users-table-wrap tbody td { padding: .9rem 1.2rem; vertical-align: middle; border-bottom: 1px solid #f0f0f6; }
+.users-table-wrap tbody tr:last-child td { border-bottom: none; }
+.users-table-wrap tbody tr:hover { background: #fafbff; }
+
+.role-badge { display: inline-flex; align-items: center; gap: .35rem; font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; padding: .28rem .7rem; border-radius: 20px; }
+.role-admin       { background: rgba(224,90,90,.12);  color: #c0392b; border: 1px solid rgba(224,90,90,.25); }
+.role-president   { background: rgba(79,70,229,.1);   color: #4f46e5; border: 1px solid rgba(79,70,229,.25); }
+.role-responsable { background: rgba(245,158,11,.1);  color: #b45309; border: 1px solid rgba(245,158,11,.25); }
+.role-etudiant    { background: rgba(90,184,138,.1);  color: #2d8a5e; border: 1px solid rgba(90,184,138,.25); }
+.role-user        { background: #f4f6fb;              color: #888;    border: 1px solid #e5e7eb; }
+
+.avatar-md { width: 38px; height: 38px; border-radius: 50%; background: #ede9fe; color: #4f46e5; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: .95rem; flex-shrink: 0; border: 2px solid #c4b5fd; }
+.user-info  { display: flex; align-items: center; gap: .8rem; }
+
+/* Modal */
+.modal-backdrop-custom { position: fixed; inset: 0; background: rgba(26,26,46,.45); z-index: 1040; display: none; backdrop-filter: blur(2px); }
+.modal-backdrop-custom.show { display: block; }
+.modal-box { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -60%) scale(.95); background: white; border-radius: 18px; box-shadow: 0 20px 60px rgba(79,70,229,.18); width: 380px; max-width: 95vw; padding: 2rem; z-index: 1050; transition: transform .25s ease, opacity .25s ease; opacity: 0; pointer-events: none; }
+.modal-box.show { transform: translate(-50%,-50%) scale(1); opacity: 1; pointer-events: auto; }
+.modal-box h5 { font-weight: 700; font-size: 1.1rem; color: #1a1a2e; margin-bottom: 1.25rem; }
+.modal-box .role-option { display: flex; align-items: center; gap: .75rem; padding: .65rem .9rem; border-radius: 10px; cursor: pointer; transition: background .15s; }
+.modal-box .role-option:hover { background: #f4f6fb; }
+.modal-box .role-option input[type=radio] { accent-color: #4f46e5; width: 16px; height: 16px; flex-shrink: 0; }
+.modal-box .role-option label { font-weight: 600; font-size: .88rem; color: #374151; cursor: pointer; margin: 0; }
+.btn-confirm-role { width: 100%; background: #4f46e5; color: white; border: none; border-radius: 25px; padding: .65rem; font-weight: 700; font-size: .9rem; margin-top: 1.25rem; cursor: pointer; transition: background .2s; }
+.btn-confirm-role:hover { background: #3730a3; }
+.btn-cancel-modal { width: 100%; background: #f4f6fb; color: #888; border: 1px solid #e5e7eb; border-radius: 25px; padding: .6rem; font-weight: 600; font-size: .88rem; margin-top: .5rem; cursor: pointer; }
+</style>
+{% endblock %}
 
 {% block body %}
-<div class="container mt-5">
-    <h2>Comptes Utilisateurs</h2>
-    <p>Gérer les comptes utilisateurs (Admin)</p>
+<div class="container mt-4 fade-up">
 
-    <table class="table">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Nom</th>
-                <th>Email</th>
-                <th>Rôles</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-        {% for user in users %}
-            <tr>
-                <td>{{ user.id }}</td>
-                <td>{{ user.nom }}</td>
-                <td>{{ user.email }}</td>
-                <td>{{ user.roles ? user.roles|json_encode : '' }}</td>
-                <td>
-                    <form method="post" action="{{ path('app_user_delete', {'id': user.id}) }}" onsubmit="return confirm('Supprimer cet utilisateur ?');">
-                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ user.id) }}">
-                        <button class="btn btn-sm btn-danger">Supprimer</button>
-                    </form>
-                </td>
-            </tr>
-        {% else %}
-            <tr>
-                <td colspan="5">Aucun utilisateur trouvé</td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+    {# ── En-tête admin ───────────────────────────────────────────────── #}
+    <div class="admin-header">
+        <h1><i class="bi bi-shield-lock me-2"></i>Gestion des Utilisateurs</h1>
+        <p>Modifier les rôles et gérer les comptes utilisateurs de la plateforme.</p>
+        <div class="admin-stats">
+            <div class="admin-stat"><span>{{ users|length }}</span>Utilisateurs</div>
+            <div class="admin-stat">
+                <span>{{ users|filter(u => 'ROLE_ADMIN' in u.roles)|length }}</span>Admins
+            </div>
+            <div class="admin-stat">
+                <span>{{ users|filter(u => 'ROLE_PRESIDENT' in u.roles)|length }}</span>Présidents
+            </div>
+        </div>
+    </div>
+
+    {# ── Tableau ─────────────────────────────────────────────────────── #}
+    <div class="users-table-wrap fade-up fade-up-d1">
+        <table class="table mb-0">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Utilisateur</th>
+                    <th>Email</th>
+                    <th>Rôle</th>
+                    <th style="text-align:right">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for user in users %}
+                {% set topRole = 'ROLE_USER' %}
+                {% if 'ROLE_ADMIN'       in user.roles %}{% set topRole = 'ROLE_ADMIN' %}
+                {% elseif 'ROLE_PRESIDENT'   in user.roles %}{% set topRole = 'ROLE_PRESIDENT' %}
+                {% elseif 'ROLE_RESPONSABLE' in user.roles %}{% set topRole = 'ROLE_RESPONSABLE' %}
+                {% elseif 'ROLE_ETUDIANT'    in user.roles %}{% set topRole = 'ROLE_ETUDIANT' %}
+                {% endif %}
+
+                <tr>
+                    <td style="color:#aaa;font-size:.82rem">{{ user.id }}</td>
+                    <td>
+                        <div class="user-info">
+                            <div class="avatar-md">{{ user.nom|first|upper }}</div>
+                            <span style="font-weight:600;color:#1a1a2e">{{ user.nom }}</span>
+                        </div>
+                    </td>
+                    <td style="color:#888;font-size:.88rem">{{ user.email }}</td>
+                    <td>
+                        <span class="role-badge role-{{ topRole|lower|replace({'role_':''}) }}">
+                            {% if topRole == 'ROLE_ADMIN' %}<i class="bi bi-shield-fill"></i>{% endif %}
+                            {% if topRole == 'ROLE_PRESIDENT' %}<i class="bi bi-star-fill"></i>{% endif %}
+                            {% if topRole == 'ROLE_RESPONSABLE' %}<i class="bi bi-person-badge"></i>{% endif %}
+                            {% if topRole == 'ROLE_ETUDIANT' %}<i class="bi bi-mortarboard"></i>{% endif %}
+                            {% if topRole == 'ROLE_USER' %}<i class="bi bi-person"></i>{% endif %}
+                            {{ topRole|replace({'ROLE_':''}) }}
+                        </span>
+                    </td>
+                    <td>
+                        <div style="display:flex;gap:.5rem;justify-content:flex-end;align-items:center">
+                            {# Bouton Modifier le rôle #}
+                            {% if app.user != user %}
+                            <button class="btn btn-sm btn-outline-primary"
+                                    style="border-radius:20px;font-size:.8rem"
+                                    onclick="openRoleModal({{ user.id }}, '{{ user.nom|e('js') }}', '{{ topRole }}')"
+                                    title="Modifier le rôle">
+                                <i class="bi bi-pencil-square me-1"></i>Rôle
+                            </button>
+
+                            {# Bouton Supprimer #}
+                            <form method="post" action="{{ path('app_user_delete', {'id': user.id}) }}"
+                                  onsubmit="return confirm('Supprimer « {{ user.nom|e('js') }} » ?');">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ user.id) }}">
+                                <button class="btn btn-sm btn-danger" style="border-radius:20px;font-size:.8rem" title="Supprimer">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                            {% else %}
+                            <span style="font-size:.78rem;color:#aaa;font-style:italic">Vous</span>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+            {% else %}
+                <tr><td colspan="5" style="text-align:center;color:#aaa;padding:2rem">Aucun utilisateur trouvé</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </div>
+
+{# ── Modal Modifier le rôle ──────────────────────────────────────────── #}
+<div class="modal-backdrop-custom" id="roleModalBackdrop" onclick="closeRoleModal()"></div>
+<div class="modal-box" id="roleModal" role="dialog" aria-modal="true" aria-labelledby="roleModalTitle">
+    <h5 id="roleModalTitle"><i class="bi bi-pencil-square text-accent me-2"></i>Modifier le rôle</h5>
+    <p id="roleModalSubtitle" style="font-size:.85rem;color:#888;margin-bottom:1rem"></p>
+
+    <form id="roleForm" method="post" action="">
+        <input type="hidden" name="_token" id="roleFormToken" value="">
+
+        {% for role in allowed_roles %}
+        <div class="role-option">
+            <input type="radio" name="role" id="role_{{ role }}" value="{{ role }}">
+            <label for="role_{{ role }}">
+                {% if role == 'ROLE_ADMIN' %}<i class="bi bi-shield-fill text-danger me-1"></i>{% endif %}
+                {% if role == 'ROLE_PRESIDENT' %}<i class="bi bi-star-fill text-accent me-1"></i>{% endif %}
+                {% if role == 'ROLE_RESPONSABLE' %}<i class="bi bi-person-badge me-1" style="color:#b45309"></i>{% endif %}
+                {% if role == 'ROLE_ETUDIANT' %}<i class="bi bi-mortarboard me-1" style="color:#2d8a5e"></i>{% endif %}
+                {{ role|replace({'ROLE_':''}) }}
+            </label>
+        </div>
+        {% endfor %}
+
+        <button type="submit" class="btn-confirm-role">
+            <i class="bi bi-check2-circle me-1"></i>Confirmer
+        </button>
+    </form>
+    <button class="btn-cancel-modal" onclick="closeRoleModal()">Annuler</button>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+const csrfTokens = {
+{% for user in users %}
+    {{ user.id }}: "{{ csrf_token('change_role' ~ user.id) }}",
+{% endfor %}
+};
+
+const roleActionBase = {
+{% for user in users %}
+    {{ user.id }}: "{{ path('app_user_change_role', {'id': user.id}) }}",
+{% endfor %}
+};
+
+function openRoleModal(userId, userName, currentRole) {
+    document.getElementById('roleModalSubtitle').textContent = 'Utilisateur : ' + userName;
+    document.getElementById('roleForm').action = roleActionBase[userId];
+    document.getElementById('roleFormToken').value = csrfTokens[userId];
+
+    // pre-select current role
+    const radio = document.getElementById('role_' + currentRole);
+    if (radio) radio.checked = true;
+
+    document.getElementById('roleModalBackdrop').classList.add('show');
+    setTimeout(() => document.getElementById('roleModal').classList.add('show'), 10);
+}
+
+function closeRoleModal() {
+    document.getElementById('roleModal').classList.remove('show');
+    document.getElementById('roleModalBackdrop').classList.remove('show');
+}
+</script>
 {% endblock %}

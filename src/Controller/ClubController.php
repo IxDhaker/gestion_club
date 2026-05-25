@@ -27,13 +27,59 @@ class ClubController extends AbstractController
         private EntityManagerInterface $em
     ) {}
 
-    // LIST
+    // LIST (public)
     #[Route('', name: 'club_index')]
     public function index(): Response
     {
         return $this->render('clubs/index.html.twig', [
             'clubs' => $this->clubRepository->findAll(),
         ]);
+    }
+
+    // ─── ADMIN : gestion des clubs ─────────────────────────────────────────────
+    #[Route('/admin/clubs', name: 'admin_club_index')]
+    #[IsGranted('ROLE_ADMIN')]
+    public function adminIndex(): Response
+    {
+        $all = $this->clubRepository->findAll();
+
+        // Regrouper par statut pour les statistiques
+        $stats = ['Actif' => 0, 'En attente' => 0, 'Inactif' => 0, 'Refusé' => 0, 'Autre' => 0];
+        foreach ($all as $club) {
+            $s = $club->getStatus();
+            if (isset($stats[$s])) {
+                $stats[$s]++;
+            } else {
+                $stats['Autre']++;
+            }
+        }
+
+        return $this->render('clubs/admin_index.html.twig', [
+            'clubs' => $all,
+            'stats' => $stats,
+        ]);
+    }
+
+    // ─── SUSPENDRE UN CLUB (Admin) ─────────────────────────────────────────────
+    #[Route('/{id}/suspend', name: 'club_suspend', methods: ['POST'])]
+    #[IsGranted('ROLE_ADMIN')]
+    public function suspend(Club $club): Response
+    {
+        $club->setStatus('Inactif');
+
+        if ($club->getPresident()) {
+            $notif = new Notification();
+            $notif->setMessage('Votre club « ' . $club->getNom() . ' » a été suspendu par l\'administrateur.');
+            $notif->setIsRead(false);
+            $notif->setCreatedAt(new \DateTimeImmutable());
+            $notif->setUser($club->getPresident());
+            $this->em->persist($notif);
+        }
+
+        $this->em->flush();
+
+        $this->addFlash('warning', 'Le club « ' . $club->getNom() . ' » a été suspendu.');
+        return $this->redirectToRoute('admin_club_index', [], Response::HTTP_SEE_OTHER);
     }
 
     // SHOW
@@ -150,7 +196,7 @@ class ClubController extends AbstractController
 
         $this->addFlash('success', 'Le club « ' . $club->getNom() . ' » a été activé.');
 
-        return $this->redirectToRoute('club_show', ['id' => $club->getId()]);
+        return $this->redirectToRoute('admin_club_index', [], Response::HTTP_SEE_OTHER);
     }
 
     // ─── REFUSER UN CLUB (Admin) ───────────────────────────────────────────────
@@ -174,7 +220,7 @@ class ClubController extends AbstractController
 
         $this->addFlash('warning', 'Le club « ' . $club->getNom() . ' » a été refusé.');
 
-        return $this->redirectToRoute('club_show', ['id' => $club->getId()]);
+        return $this->redirectToRoute('admin_club_index', [], Response::HTTP_SEE_OTHER);
     }
 
     // SHOW NEW FORM
