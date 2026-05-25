@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Recruitment;
 use App\Form\RecruitmentType;
+use App\Repository\ClubRepository;
 use App\Repository\RecruitmentRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -26,13 +27,22 @@ final class RecruitmentController extends AbstractController
 
     #[Route('/new', name: 'app_recruitment_new', methods: ['GET', 'POST'])]
     #[IsGranted('ROLE_RESPONSABLE')]
-    public function new(Request $request, EntityManagerInterface $entityManager): Response
+    public function new(Request $request, EntityManagerInterface $entityManager, ClubRepository $clubRepository): Response
     {
+        /** @var \App\Entity\User $currentUser */
+        $currentUser = $this->getUser();
+        $userClub = $clubRepository->findOneBy(['president' => $currentUser]);
+
         $recruitment = new Recruitment();
         $form = $this->createForm(RecruitmentType::class, $recruitment);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            if (!$userClub) {
+                $this->addFlash('danger', 'Vous devez avoir un club avant de créer un recrutement.');
+                return $this->redirectToRoute('app_recruitment_new');
+            }
+            $recruitment->setClub($userClub);
             $entityManager->persist($recruitment);
             $entityManager->flush();
 
@@ -41,7 +51,8 @@ final class RecruitmentController extends AbstractController
 
         return $this->render('recruitment/new.html.twig', [
             'recruitment' => $recruitment,
-            'form' => $form,
+            'form'        => $form,
+            'userClub'    => $userClub,
         ]);
     }
 
