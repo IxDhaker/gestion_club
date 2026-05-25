@@ -1,134 +1,198 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Accueil — ClubHub{% endblock %}
+{% block title %}Accueil — ClubHub
+{% endblock %}
 
 {% block stylesheets %}
-<style>
-.section-title { font-size: 1.5rem; font-weight: 700; color: #1a1a2e; }
-.section-link { color: #4f46e5; font-weight: 500; text-decoration: none; }
-.club-card {
-    background: white; border-radius: 16px; padding: 24px; text-align: center;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.07); transition: transform 0.2s; height: 100%;
-}
-.club-card:hover { transform: translateY(-5px); }
-.club-icon {
-    width: 64px; height: 64px; border-radius: 16px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 1.5rem; font-weight: 700; margin: 0 auto 16px;
-}
-.club-card h5 { font-weight: 700; font-size: 1rem; color: #1a1a2e; }
-.club-card p { font-size: 0.82rem; color: #888; }
-.btn-join {
-    border: 2px solid #4f46e5; color: #4f46e5; border-radius: 20px;
-    padding: 5px 22px; font-weight: 600; font-size: 0.85rem; background: transparent;
-}
-.btn-join:hover { background-color: #4f46e5; color: white; }
-.event-card {
-    background: white; border-radius: 16px; padding: 20px;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.07);
-    display: flex; align-items: center; gap: 16px; margin-bottom: 16px;
-}
-.event-date-box {
-    background: linear-gradient(135deg, #4f46e5, #7c3aed);
-    color: white; border-radius: 12px; padding: 10px 16px;
-    text-align: center; min-width: 60px;
-}
-.event-date-box .day { font-size: 1.5rem; font-weight: 700; line-height: 1; }
-.event-date-box .month { font-size: 0.75rem; text-transform: uppercase; opacity: 0.85; }
-.event-info h6 { font-weight: 700; margin-bottom: 4px; color: #1a1a2e; }
-.event-info p { font-size: 0.82rem; color: #888; margin: 0; }
-.event-badge {
-    margin-left: auto; background-color: #ede9fe; color: #4f46e5;
-    border-radius: 20px; padding: 4px 14px; font-size: 0.78rem; font-weight: 600;
-}
-</style>
+	<style>
+		.section-title {
+			font-size: 1.5rem;
+			font-weight: 700;
+			color: #1a1a2e;
+		}
+		.section-link {
+			color: #4f46e5;
+			font-weight: 500;
+			text-decoration: none;
+		}
+		.club-card {
+			background: white;
+			border-radius: 16px;
+			padding: 24px;
+			text-align: center;
+			box-shadow: 0 2px 12px rgba(0, 0, 0, 0.07);
+			transition: transform 0.2s;
+			height: 100%;
+		}
+		.club-card:hover {
+			transform: translateY(-5px);
+		}
+		.club-icon {
+			width: 64px;
+			height: 64px;
+			border-radius: 16px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			font-size: 1.5rem;
+			font-weight: 700;
+			margin: 0 auto 16px;
+		}
+		.club-card h5 {
+			font-weight: 700;
+			font-size: 1rem;
+			color: #1a1a2e;
+		}
+		.club-card p {
+			font-size: 0.82rem;
+			color: #888;
+		}
+		.btn-join {
+			border: 2px solid #4f46e5;
+			color: #4f46e5;
+			border-radius: 20px;
+			padding: 5px 22px;
+			font-weight: 600;
+			font-size: 0.85rem;
+			background: transparent;
+		}
+		.btn-join:hover {
+			background-color: #4f46e5;
+			color: white;
+		}
+		.event-card {
+			background: white;
+			border-radius: 16px;
+			padding: 20px;
+			box-shadow: 0 2px 12px rgba(0, 0, 0, 0.07);
+			display: flex;
+			align-items: center;
+			gap: 16px;
+			margin-bottom: 16px;
+		}
+		.event-date-box {
+			background: linear-gradient(135deg, #4f46e5, #7c3aed);
+			color: white;
+			border-radius: 12px;
+			padding: 10px 16px;
+			text-align: center;
+			min-width: 60px;
+		}
+		.event-date-box .day {
+			font-size: 1.5rem;
+			font-weight: 700;
+			line-height: 1;
+		}
+		.event-date-box .month {
+			font-size: 0.75rem;
+			text-transform: uppercase;
+			opacity: 0.85;
+		}
+		.event-info h6 {
+			font-weight: 700;
+			margin-bottom: 4px;
+			color: #1a1a2e;
+		}
+		.event-info p {
+			font-size: 0.82rem;
+			color: #888;
+			margin: 0;
+		}
+		.event-badge {
+			margin-left: auto;
+			background-color: #ede9fe;
+			color: #4f46e5;
+			border-radius: 20px;
+			padding: 4px 14px;
+			font-size: 0.78rem;
+			font-weight: 600;
+		}
+	</style>
 {% endblock %}
 
 {% block body %}
 
-<!-- HERO -->
-<section style="border-radius: 0 0 40px 40px; overflow:hidden;">
-    <div class="row g-0" style="min-height:420px;">
-        <div class="col-lg-8 d-flex align-items-center"
-             style="background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); padding: 80px 60px;">
-            <div>
-                <h1 style="font-size:2.8rem; font-weight:700; color:white; line-height:1.2;">
-                    Bienvenue dans<br>les <span style="color:#fbbf24;">Clubs de l'Institut</span>
-                </h1>
-                <p style="font-size:1.1rem; color:rgba(255,255,255,0.9); margin:20px 0 30px;">
-                    Rejoignez un club, participez à des événements et développez vos compétences avec d'autres étudiants.
-                </p>
-                <div class="d-flex gap-3 flex-wrap">
-                    <a href="#" class="btn"
-                       style="background:white; color:#4f46e5; border-radius:25px; padding:10px 28px; font-weight:600;">
-                        Découvrir les clubs
-                    </a>
-                    <a href="#" class="btn"
-                       style="background:transparent; color:white; border:2px solid white; border-radius:25px; padding:10px 28px; font-weight:600;">
-                        Voir les événements
-                    </a>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-4 d-flex align-items-center justify-content-center"
-             style="background:white; padding:40px;">
-             <img src="{{ asset('images/iset_logo.png') }}" style="width:500px;" alt="ISET Logo">        </div>
-    </div>
-</section>
+	<!-- HERO -->
+	<section style="border-radius: 0 0 40px 40px; overflow:hidden;">
+		<div class="row g-0" style="min-height:420px;">
+			<div class="col-lg-8 d-flex align-items-center" style="background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); padding: 80px 60px;">
+				<div>
+					<h1 style="font-size:2.8rem; font-weight:700; color:white; line-height:1.2;">
+						Bienvenue dans<br>les
+						<span style="color:#fbbf24;">Clubs de l'Institut</span>
+					</h1>
+					<p style="font-size:1.1rem; color:rgba(255,255,255,0.9); margin:20px 0 30px;">
+						Rejoignez un club, participez à des événements et développez vos compétences avec d'autres étudiants.
+					</p>
+					<div class="d-flex gap-3 flex-wrap">
+						<a href="{{ path('club_index') }}" class="btn" style="background:white; color:#4f46e5; border-radius:25px; padding:10px 28px; font-weight:600;">
+							Découvrir les clubs
+						</a>
+						<a href="{{ path('event_index') }}" class="btn" style="background:transparent; color:white; border:2px solid white; border-radius:25px; padding:10px 28px; font-weight:600;">
+							Voir les événements
+						</a>
+					</div>
+				</div>
+			</div>
+			<div class="col-lg-4 d-flex align-items-center justify-content-center" style="background:white; padding:40px;">
+				<img src="{{ asset('images/iset_logo.png') }}" style="width:500px;" alt="ISET Logo">
+			</div>
+		</div>
+	</section>
 
-<!-- CLUBS -->
-<section class="container mt-5">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="section-title">Nos Clubs Populaires</h2>
-        <a href="#" class="section-link">Voir tous →</a>
-    </div>
-    <div class="row g-4">
-        {% for club in clubs %}
-        <div class="col-lg-3 col-md-6">
-            <div class="club-card">
-                <div class="club-icon" style="background-color:#ede9fe; color:#4f46e5;">
-                    {{ club.nom|slice(0,1)|upper }}
-                </div>
-                <h5>{{ club.nom }}</h5>
-                <p>{{ club.domaine }}</p>
-                <button class="btn btn-join">Rejoindre</button>
-            </div>
-        </div>
-        {% else %}
-        <div class="col-12 text-center py-4">
-            <p style="color:#888;">Aucun club disponible pour le moment</p>
-        </div>
-        {% endfor %}
-    </div>
-</section>
+	<!-- CLUBS -->
+	<section class="container mt-5">
+		<div class="d-flex justify-content-between align-items-center mb-4">
+			<h2 class="section-title">Nos Clubs Populaires</h2>
+			<a href="{{ path('club_index') }}" class="section-link">Voir tous →</a>
+		</div>
+		<div class="row g-4">
+			{% for club in clubs %}
+				<div class="col-lg-3 col-md-6">
+					<div class="club-card">
+						<div class="club-icon" style="background-color:#ede9fe; color:#4f46e5;">
+							{{ club.nom|slice(0,1)|upper }}
+						</div>
+						<h5>{{ club.nom }}</h5>
+						<p>{{ club.domaine }}</p>
+						<button class="btn btn-join">Rejoindre</button>
+					</div>
+				</div>
+			{% else %}
+				<div class="col-12 text-center py-4">
+					<p style="color:#888;">Aucun club disponible pour le moment</p>
+				</div>
+			{% endfor %}
+		</div>
+	</section>
 
-<!-- EVENTS -->
-<section class="container mt-5 mb-5">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="section-title">Evenements à venir</h2>
-        <a href="#" class="section-link">Voir tous →</a>
-    </div>
-    <div class="row g-3">
-        {% for event in events %}
-        <div class="col-lg-4">
-            <div class="event-card">
-                <div class="event-date-box">
-                    <div class="day">{{ event.dateEvent ? event.dateEvent|date('d') : '--' }}</div>
-                    <div class="month">{{ event.dateEvent ? event.dateEvent|date('M') : '--' }}</div>
-                </div>
-                <div class="event-info">
-                    <h6>{{ event.titre }}</h6>
-                    <p>{{ event.lieu }}</p>
-                </div>
-                <span class="event-badge">{{ event.status }}</span>
-            </div>
-        </div>
-        {% else %}
-        <div class="col-12 text-center py-4">
-            <p style="color:#888;">Aucun evenement disponible pour le moment</p>
-        </div>
-        {% endfor %}
-    </div>
-</section>
+	<!-- EVENTS -->
+	<section class="container mt-5 mb-5">
+		<div class="d-flex justify-content-between align-items-center mb-4">
+			<h2 class="section-title">Evenements à venir</h2>
+			<a href="{{ path('event_index') }}" class="section-link">Voir tous →</a>
+		</div>
+		<div class="row g-3">
+			{% for event in events %}
+				<div class="col-lg-4">
+					<div class="event-card">
+						<div class="event-date-box">
+							<div class="day">{{ event.dateEvent ? event.dateEvent|date('d') : '--' }}</div>
+							<div class="month">{{ event.dateEvent ? event.dateEvent|date('M') : '--' }}</div>
+						</div>
+						<div class="event-info">
+							<h6>{{ event.titre }}</h6>
+							<p>{{ event.lieu }}</p>
+						</div>
+						<span class="event-badge">{{ event.status }}</span>
+					</div>
+				</div>
+			{% else %}
+				<div class="col-12 text-center py-4">
+					<p style="color:#888;">Aucun evenement disponible pour le moment</p>
+				</div>
+			{% endfor %}
+		</div>
+	</section>
 
 {% endblock %}
