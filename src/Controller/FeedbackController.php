@@ -20,7 +20,7 @@ final class FeedbackController extends AbstractController
     public function index(FeedbackRepository $feedbackRepository): Response
     {
         return $this->render('feedback/index.html.twig', [
-            'feedback' => $feedbackRepository->findAll(),
+            'feedbacks' => $feedbackRepository->findAll(),
         ]);
     }
 

@@ -24,6 +24,21 @@ final class ReclamationController extends AbstractController
         ]);
     }
 
+    // ─── MES RECLAMATIONS ─────────────────────────────────────────────────────
+    #[Route('/mes-reclamations', name: 'app_reclamation_mes', methods: ['GET'])]
+    #[IsGranted('ROLE_USER')]
+    public function mesReclamations(ReclamationRepository $reclamationRepository): Response
+    {
+        $reclamations = $reclamationRepository->findBy(
+            ['user' => $this->getUser()],
+            ['createdAt' => 'DESC']
+        );
+
+        return $this->render('reclamation/mes_reclamations.html.twig', [
+            'reclamations' => $reclamations,
+        ]);
+    }
+
     #[Route('/new', name: 'app_reclamation_new', methods: ['GET', 'POST'])]
     #[IsGranted('ROLE_ETUDIANT')]
     public function new(Request $request, EntityManagerInterface $entityManager): Response

@@ -203,7 +203,10 @@
                     </a>
                     <a href="{{ path('app_notification_index') }}" role="menuitem">
                         <i class="bi bi-bell"></i>Notifications
-                    </a>                    
+                    </a>            
+                    <a href="{{ path('app_reclamation_mes') }}" role="menuitem">
+                        <i class="bi bi-envelope"></i>Mes Réclamations
+                    </a>        
                     {% if is_granted('ROLE_PRESIDENT') %}
                     <div class="user-dropdown-divider"></div>
                     <a href="{{ path('club_new') }}" role="menuitem">
