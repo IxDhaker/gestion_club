@@ -136,7 +136,7 @@ class ClubController extends AbstractController
 
     // ─── DEMANDE D'ACTIVATION (Tâche 5) ───────────────────────────────────────
     #[Route('/{id}/request-activation', name: 'club_request_activation', methods: ['POST'])]
-    #[IsGranted('ROLE_PRESIDENT')]
+    #[IsGranted('ROLE_RESPONSABLE')]
     public function requestActivation(Club $club): Response
     {
         /** @var \App\Entity\User $president */
@@ -225,7 +225,7 @@ class ClubController extends AbstractController
 
     // SHOW NEW FORM
     #[Route('/new', name: 'club_new', methods: ['GET', 'POST'])]
-    #[IsGranted('ROLE_PRESIDENT')]
+    #[IsGranted('ROLE_RESPONSABLE')]
     public function new(Request $request, SluggerInterface $slugger): Response
     {
         $club = new Club();
@@ -264,7 +264,7 @@ class ClubController extends AbstractController
 
     // EDIT CLUB
     #[Route('/{id}/edit', name: 'club_edit', methods: ['GET', 'POST'])]
-    #[IsGranted('ROLE_PRESIDENT')]
+    #[IsGranted('ROLE_RESPONSABLE')]
     public function edit(Request $request, Club $club, SluggerInterface $slugger): Response
     {
         $form = $this->createForm(ClubType::class, $club);
