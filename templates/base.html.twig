@@ -216,12 +216,13 @@
 
                     {% if is_granted('ROLE_ADMIN') %}
                     <div class="user-dropdown-divider"></div>
+                    <a href="{{ path('app_dashboard') }}" role="menuitem">
+                        <i class="bi bi-speedometer2"></i>Dashboard Admin
+                    </a>
                     <a href="{{ path('app_user_index') }}" role="menuitem">
                         <i class="bi bi-shield-lock"></i>Gérer Utilisateurs
                     </a>
-                    {% endif %}
-                    
-                    <div class="user-dropdown-divider"></div>
+                    {% endif %}                  <div class="user-dropdown-divider"></div>
                     <a href="{{ path('app_logout') }}" class="signout-link" role="menuitem">
                         <i class="bi bi-box-arrow-left"></i>Déconnexion
                     </a>
