@@ -36,6 +36,7 @@ final class FeedbackController extends AbstractController
             /** @var \App\Entity\User|null $user */
             $user = $this->getUser();
             $feedback->setUser($user);
+            $feedback->setCreatedAt(new \DateTimeImmutable());
             $entityManager->persist($feedback);
             $entityManager->flush();
 
