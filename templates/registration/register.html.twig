@@ -87,7 +87,7 @@
     }
     .role-grid {
         display: grid;
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: repeat(3, 1fr);
         gap: .75rem;
         margin-bottom: 1.15rem;
     }
@@ -247,6 +247,14 @@
                             <span class="role-emoji">🎓</span>
                             <span class="role-title">Étudiant</span>
                             <span class="role-sub">Student member</span>
+                        </div>
+                    </div>
+                    {# Responsable card #}
+                    <div class="role-card-wrap" data-value="ROLE_RESPONSABLE">
+                        <div class="role-option-label" id="card-responsable">
+                            <span class="role-emoji">👔</span>
+                            <span class="role-title">Responsable</span>
+                            <span class="role-sub">Club manager</span>
                         </div>
                     </div>
                     {# Président card #}

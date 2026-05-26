@@ -89,23 +89,32 @@ class EventController extends AbstractController
     #[Route('/{id}', name: 'event_show', methods: ['GET'], requirements: ['id' => '\d+'])]
     public function show(Event $event): Response
     {
-        $participants = $this->participationRepository->findBy(['event' => $event]);
+        $participants = $this->participationRepository->findBy([
+            'event' => $event,
+            'status' => 'Inscrit',
+        ]);
 
-        $isParticipating = false;
+        $userParticipation = null;
         if ($this->getUser()) {
-            $isParticipating = (bool) $this->participationRepository
+            $userParticipation = $this->participationRepository
                 ->findOneBy(['event' => $event, 'user' => $this->getUser()]);
         }
 
         $spotsLeft = null;
         if (method_exists($event, 'getMaxParticipants') && $event->getMaxParticipants() !== null) {
-            $spotsLeft = $event->getMaxParticipants() - count($participants);
+            $reservedPlaces = (int) $this->participationRepository->countByEventAndStatuses($event, [
+                'En attente',
+                'Inscrit',
+            ]);
+            /** @phpstan-ignore-next-line */
+            $spotsLeft = (int) $event->getMaxParticipants() - $reservedPlaces;
         }
 
         return $this->render('events/show.html.twig', [
             'event' => $event,
             'participants' => $participants,
-            'isParticipating' => $isParticipating,
+            'isParticipating' => $userParticipation !== null && $userParticipation->getStatus() !== 'Refuse',
+            'userParticipation' => $userParticipation,
             'spotsLeft' => $spotsLeft,
         ]);
     }
@@ -149,7 +158,7 @@ class EventController extends AbstractController
     #[IsGranted('ROLE_ADMIN')]
     public function validate(Request $request, Event $event, EntityManagerInterface $em): Response
     {
-        if ($this->isCsrfTokenValid('validate'.$event->getId(), $request->request->get('_token'))) {
+        if ($this->isCsrfTokenValid('validate'.$event->getId(), (string) $request->request->get('_token'))) {
             $event->setStatus('Validé');
             $em->flush();
             $this->addFlash('success', 'Evenement valide avec succes.');
@@ -162,7 +171,7 @@ class EventController extends AbstractController
     #[IsGranted('ROLE_ADMIN')]
     public function reject(Request $request, Event $event, EntityManagerInterface $em): Response
     {
-        if ($this->isCsrfTokenValid('reject'.$event->getId(), $request->request->get('_token'))) {
+        if ($this->isCsrfTokenValid('reject'.$event->getId(), (string) $request->request->get('_token'))) {
             $event->setStatus('Refusé');
             $em->flush();
             $this->addFlash('danger', 'Evenement refuse.');

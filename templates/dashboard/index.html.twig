@@ -482,7 +482,8 @@
             </div>
             <div class="part-date">
                 <i class="bi bi-clock me-1"></i>
-                Inscrit le {{ p.dateParticipation|date('d M Y') }}
+                Demande le {{ p.dateParticipation|date('d M Y') }}
+                <span class="metric-pill ms-2">{{ p.status }}</span>
             </div>
             {% if p.event %}
                 <a href="{{ path('event_show', {id: p.event.id}) }}" class="btn-muted" style="font-size:.78rem;padding:.35rem .85rem;white-space:nowrap;">

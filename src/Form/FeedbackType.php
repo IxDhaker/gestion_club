@@ -4,7 +4,6 @@ namespace App\Form;
 
 use App\Entity\Event;
 use App\Entity\Feedback;
-use App\Entity\User;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -17,8 +16,11 @@ class FeedbackType extends AbstractType
         $builder
             ->add('content')
             ->add('rating')
-            ->add('createdAt', null, [
-                'widget' => 'single_text',
+            ->add('event', EntityType::class, [
+                'class' => Event::class,
+                'choice_label' => 'titre',
+                'placeholder' => 'Sélectionner un événement',
+                'label' => 'Événement',
             ]);
     }
 

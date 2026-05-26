@@ -48,7 +48,9 @@ final class ReclamationController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $reclamation->setUser($this->getUser());
+            /** @var \App\Entity\User|null $user */
+            $user = $this->getUser();
+            $reclamation->setUser($user);
             $entityManager->persist($reclamation);
             $entityManager->flush();
 
@@ -93,7 +95,7 @@ final class ReclamationController extends AbstractController
     #[IsGranted('ROLE_ADMIN')]
     public function delete(Request $request, Reclamation $reclamation, EntityManagerInterface $entityManager): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$reclamation->getId(), $request->getPayload()->getString('_token'))) {
+        if ($this->isCsrfTokenValid('delete'.$reclamation->getId(), (string) $request->request->get('_token'))) {
             $entityManager->remove($reclamation);
             $entityManager->flush();
         }
