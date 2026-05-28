@@ -3,16 +3,9 @@
 {% block title %}{{ club.nom }} — ClubHub{% endblock %}
 
 {% block body %}
-<div class="container mt-5 mb-5">
 
-    {# Fil d'ariane #}
-    <nav class="mb-4" style="font-size:.82rem; color:#888;">
-        <a href="{{ path('club_index') }}" style="color:#4f46e5; text-decoration:none;">Clubs</a>
-        <i class="bi bi-chevron-right mx-1" style="font-size:.7rem"></i>
-        <span>{{ club.nom }}</span>
-    </nav>
-
-    {# Flash messages #}
+{# ── Flash messages ── #}
+<div class="container mt-3">
     {% for type, messages in app.flashes %}
         {% for message in messages %}
             <div class="alert alert-{{ type == 'danger' ? 'danger' : (type == 'warning' ? 'warning' : (type == 'info' ? 'info' : 'success')) }} alert-dismissible fade show" role="alert">
@@ -21,104 +14,198 @@
             </div>
         {% endfor %}
     {% endfor %}
+</div>
 
-    {# Carte de présentation du Club #}
-    <div style="background:white; border-radius:16px; padding:2.5rem; box-shadow:0 2px 12px rgba(0,0,0,0.07); margin-bottom:2rem;">
-        <div class="d-flex flex-wrap align-items-start justify-content-between gap-3">
+{# ── Hero ── #}
+<div style="background:linear-gradient(135deg,#1a1a2e,#16213e,#0f3460); padding:56px 0 100px; margin-bottom:-64px; position:relative; overflow:hidden;">
+    <div style="position:absolute;inset:0;opacity:.4;background:radial-gradient(circle at 70% 50%,#4f46e5 0%,transparent 60%);"></div>
+    <div class="container" style="position:relative;">
+
+        {# Breadcrumb #}
+        <nav style="font-size:.82rem; color:#94a3b8; margin-bottom:24px;">
+            <a href="{{ path('club_index') }}" style="color:#a5b4fc; text-decoration:none; font-weight:600;">Clubs</a>
+            <span style="margin:0 8px; opacity:.5;">›</span>
+            <span style="color:#e2e8f0;">{{ club.nom }}</span>
+        </nav>
+
+        <div class="d-flex align-items-center gap-4 flex-wrap">
+
+            {# Logo / Avatar #}
+            <div style="width:96px; height:96px; border-radius:22px; overflow:hidden; border:3px solid rgba(255,255,255,0.2); flex-shrink:0; box-shadow:0 8px 32px rgba(0,0,0,0.3);">
+                {% if club.logo %}
+                    <img src="{{ asset('uploads/logos/' ~ club.logo) }}" alt="{{ club.nom }}" style="width:100%; height:100%; object-fit:cover;">
+                {% else %}
+                    <div style="width:100%; height:100%; background:linear-gradient(135deg,#4f46e5,#7c3aed); display:flex; align-items:center; justify-content:center; color:white; font-weight:800; font-size:2.2rem;">
+                        {{ club.nom|slice(0,1)|upper }}
+                    </div>
+                {% endif %}
+            </div>
+
             <div>
-                <span style="background:#ede9fe; color:#4f46e5; border-radius:6px; padding:2px 10px; font-size:0.72rem; font-weight:600; text-transform:uppercase; margin-bottom:0.75rem; display:inline-block;">
-                    <i class="bi bi-people-fill me-1"></i>Club
-                </span>
-                <h1 style="font-weight:700; color:#1a1a2e; font-size:2rem; margin-bottom:1rem;">{{ club.nom }}</h1>
-                <div class="d-flex flex-wrap gap-2">
-                    <span style="background:#f4f6fb; border:1px solid #e5e7eb; border-radius:8px; padding:6px 14px; font-size:0.82rem; color:#555;">
-                        <i class="bi bi-tag" style="color:#4f46e5;"></i>
+                <div class="d-flex align-items-center gap-2 flex-wrap mb-2">
+                    <span style="background:rgba(255,255,255,0.1); color:#a5b4fc; border-radius:20px; padding:4px 14px; font-size:0.75rem; font-weight:700; backdrop-filter:blur(4px);">
                         {{ club.domaine }}
                     </span>
-                    <span style="background:{% if club.status == 'Actif' %}#d1fae5{% elseif club.status == 'En attente' %}#fef9c3{% else %}#fee2e2{% endif %}; border:1px solid {% if club.status == 'Actif' %}#a7f3d0{% elseif club.status == 'En attente' %}#fde68a{% else %}#fecaca{% endif %}; border-radius:8px; padding:6px 14px; font-size:0.82rem; color:{% if club.status == 'Actif' %}#047857{% elseif club.status == 'En attente' %}#92400e{% else %}#991b1b{% endif %};">
-                        <i class="bi bi-circle-fill" style="font-size:0.6rem; margin-right:4px;"></i>
+                    <span style="border-radius:20px; padding:4px 14px; font-size:0.75rem; font-weight:700;
+                        background:{% if club.status == 'Actif' %}rgba(16,185,129,0.2){% elseif club.status == 'En attente' %}rgba(245,158,11,0.2){% else %}rgba(239,68,68,0.2){% endif %};
+                        color:{% if club.status == 'Actif' %}#6ee7b7{% elseif club.status == 'En attente' %}#fcd34d{% else %}#fca5a5{% endif %};">
+                        {% if club.status == 'Actif' %}✓{% elseif club.status == 'En attente' %}⏳{% else %}✗{% endif %}
                         {{ club.status }}
                     </span>
                 </div>
-            </div>
-            
-            <div class="d-flex gap-2 flex-wrap">
-
-                {# ── BOUTON REJOINDRE (Tâche 6) ─────────────────────────────── #}
-                {% if is_granted('ROLE_USER') %}
-                    {% if isMember %}
-                        <span style="background:#d1fae5; color:#047857; border:1px solid #a7f3d0; border-radius:8px; padding:8px 20px; font-weight:600; display:inline-flex; align-items:center; gap:6px;">
-                            <i class="bi bi-check-circle-fill"></i> Déjà membre
-                        </span>
-                    {% else %}
-                        <form method="post" action="{{ path('club_join', {'id': club.id}) }}" style="display:inline-block;">
-                            <button type="submit" style="background:#4f46e5; color:white; border:none; border-radius:8px; padding:8px 20px; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:6px;">
-                                <i class="bi bi-plus-circle"></i> Rejoindre
-                            </button>
-                        </form>
-                    {% endif %}
-                {% else %}
-                    <a href="{{ path('app_login') }}" style="background:transparent; color:#4f46e5; border:1px solid #4f46e5; border-radius:8px; padding:8px 20px; font-weight:600; display:inline-block; text-decoration:none;">
-                        <i class="bi bi-lock me-1"></i>Connectez-vous pour rejoindre
-                    </a>
-                {% endif %}
-
-                {# ── DEMANDE D'ACTIVATION (Tâche 5) — Président du club ────── #}
-                {% if is_granted('ROLE_PRESIDENT') and club.president is not null and club.president == app.user %}
-                    {% if club.status == 'Inactif' or club.status == 'Refusé' %}
-                        <form method="post" action="{{ path('club_request_activation', {'id': club.id}) }}" style="display:inline-block;">
-                            <button type="submit" style="background:#f59e0b; color:white; border:none; border-radius:8px; padding:8px 20px; font-weight:600; cursor:pointer;" onclick="return confirm('Envoyer une demande d\'activation à l\'administrateur ?');">
-                                <i class="bi bi-send me-1"></i>Demander l'activation
-                            </button>
-                        </form>
-                    {% elseif club.status == 'En attente' %}
-                        <span style="background:#fef9c3; color:#92400e; border:1px solid #fde68a; border-radius:8px; padding:8px 20px; font-weight:600; display:inline-block;">
-                            <i class="bi bi-hourglass-split me-1"></i>En attente d'approbation
-                        </span>
-                    {% endif %}
-                {% endif %}
-
-                {# ── ACTIVER / REFUSER (Admin) ─────────────────────────────── #}
-                {% if is_granted('ROLE_ADMIN') and club.status == 'En attente' %}
-                    <form method="post" action="{{ path('club_activate', {'id': club.id}) }}" style="display:inline-block;">
-                        <button type="submit" class="btn btn-success btn-sm" onclick="return confirm('Activer ce club ?');">
-                            <i class="bi bi-check-circle me-1"></i>Activer
-                        </button>
-                    </form>
-                    <form method="post" action="{{ path('club_refuse', {'id': club.id}) }}" style="display:inline-block;">
-                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Refuser ce club ?');">
-                            <i class="bi bi-x-circle me-1"></i>Refuser
-                        </button>
-                    </form>
-                {% endif %}
-
-                {% if is_granted('ROLE_PRESIDENT') or is_granted('ROLE_ADMIN') %}
-                    <a href="{{ path('club_edit', {'id': club.id}) }}" class="btn btn-outline-secondary">
-                        <i class="bi bi-pencil me-1"></i>Modifier
-                    </a>
-                {% endif %}
-                
-                {% if is_granted('ROLE_ADMIN') %}
-                    <form method="post" action="{{ path('club_delete', {'id': club.id}) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce club ?');" style="display:inline-block;">
-                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ club.id) }}">
-                        <button class="btn btn-outline-danger">
-                            <i class="bi bi-trash me-1"></i>Supprimer
-                        </button>
-                    </form>
+                <h1 style="color:white; font-weight:800; font-size:2.2rem; margin:0; text-shadow:0 2px 8px rgba(0,0,0,0.3);">{{ club.nom }}</h1>
+                {% if club.president %}
+                <p style="color:#94a3b8; margin-top:8px; margin-bottom:0; font-size:0.9rem;">
+                    Présidé par <strong style="color:#a5b4fc;">{{ club.president.nom }}</strong>
+                </p>
                 {% endif %}
             </div>
         </div>
-
-        {% if club.description %}
-            <hr style="border-color:#f4f6fb; margin:1.75rem 0;">
-            <p style="color:#555; line-height:1.8; font-size:.96rem; margin-bottom: 2rem;">{{ club.description }}</p>
-        {% endif %}
     </div>
-
-    {# Retour aux Clubs #}
-    <a href="{{ path('club_index') }}" class="btn btn-secondary">
-        <i class="bi bi-arrow-left me-2"></i>Retour aux Clubs
-    </a>
-
 </div>
+
+{# ── Main Content ── #}
+<div class="container mb-5" style="position:relative; z-index:1;">
+    <div class="row g-4">
+
+        {# Left: description + actions #}
+        <div class="col-lg-8">
+            <div style="background:white; border-radius:20px; padding:36px; box-shadow:0 4px 24px rgba(0,0,0,0.08); margin-bottom:20px;">
+
+                {% if club.description %}
+                <h5 style="font-weight:700; color:#1a1a2e; margin-bottom:14px; font-size:1rem; text-transform:uppercase; letter-spacing:.04em; color:#9ca3af;">À propos</h5>
+                <p style="color:#374151; line-height:1.8; font-size:0.97rem; margin-bottom:0;">{{ club.description }}</p>
+                {% else %}
+                <p style="color:#9ca3af; font-style:italic;">Aucune description disponible.</p>
+                {% endif %}
+
+            </div>
+
+            {# Action buttons #}
+            <div style="background:white; border-radius:20px; padding:28px 36px; box-shadow:0 4px 24px rgba(0,0,0,0.08);">
+                <h5 style="font-weight:700; color:#9ca3af; font-size:0.85rem; text-transform:uppercase; letter-spacing:.05em; margin-bottom:20px;">Actions</h5>
+
+                <div class="d-flex gap-3 flex-wrap align-items-center">
+
+                    {# Rejoindre / Déjà membre #}
+                    {% if is_granted('ROLE_USER') %}
+                        {% if isMember %}
+                            <span style="background:#d1fae5; color:#047857; border-radius:30px; padding:12px 24px; font-weight:700; display:inline-flex; align-items:center; gap:8px; font-size:0.9rem;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                                Déjà membre
+                            </span>
+                        {% else %}
+                            <form method="post" action="{{ path('club_postuler', {'id': club.id}) }}" style="margin:0;">
+                                <button type="submit" style="background:linear-gradient(135deg,#4f46e5,#7c3aed); color:white; border:none; border-radius:30px; padding:12px 28px; font-weight:700; cursor:pointer; font-size:0.9rem; box-shadow:0 4px 14px rgba(79,70,229,0.35); transition:transform .15s;">
+                                    📝 Postuler
+                                </button>
+                            </form>
+                        {% endif %}
+                    {% else %}
+                        <a href="{{ path('app_login') }}" style="background:#f1f5f9; color:#4f46e5; border-radius:30px; padding:12px 24px; font-weight:700; text-decoration:none; font-size:0.9rem;">
+                            🔒 Connectez-vous pour postuler
+                        </a>
+                    {% endif %}
+
+                    {# Demande d'activation #}
+                    {% if is_granted('ROLE_PRESIDENT') and club.president is not null and club.president == app.user %}
+                        {% if club.status == 'Inactif' or club.status == 'Refusé' %}
+                            <form method="post" action="{{ path('club_request_activation', {'id': club.id}) }}" style="margin:0;">
+                                <button type="submit" style="background:linear-gradient(135deg,#f59e0b,#ef4444); color:white; border:none; border-radius:30px; padding:12px 24px; font-weight:700; cursor:pointer; font-size:0.9rem;" onclick="return confirm('Envoyer une demande d\'activation ?');">
+                                    📨 Demander l'activation
+                                </button>
+                            </form>
+                        {% elseif club.status == 'En attente' %}
+                            <span style="background:#fef9c3; color:#92400e; border-radius:30px; padding:12px 24px; font-weight:700; font-size:0.9rem;">
+                                ⏳ En attente d'approbation
+                            </span>
+                        {% endif %}
+                    {% endif %}
+
+                    {# Admin: activer / refuser #}
+                    {% if is_granted('ROLE_ADMIN') and club.status == 'En attente' %}
+                        <form method="post" action="{{ path('club_activate', {'id': club.id}) }}" style="margin:0;">
+                            <button type="submit" style="background:#10b981; color:white; border:none; border-radius:30px; padding:12px 22px; font-weight:700; cursor:pointer; font-size:0.88rem;" onclick="return confirm('Activer ce club ?');">
+                                ✓ Activer
+                            </button>
+                        </form>
+                        <form method="post" action="{{ path('club_refuse', {'id': club.id}) }}" style="margin:0;">
+                            <button type="submit" style="background:#ef4444; color:white; border:none; border-radius:30px; padding:12px 22px; font-weight:700; cursor:pointer; font-size:0.88rem;" onclick="return confirm('Refuser ce club ?');">
+                                ✗ Refuser
+                            </button>
+                        </form>
+                    {% endif %}
+
+                    {# Edit #}
+                    {% if is_granted('ROLE_PRESIDENT') or is_granted('ROLE_ADMIN') %}
+                        <a href="{{ path('club_edit', {'id': club.id}) }}" style="background:#f1f5f9; color:#374151; border-radius:30px; padding:12px 22px; font-weight:700; text-decoration:none; font-size:0.88rem;">
+                            ✏️ Modifier
+                        </a>
+                    {% endif %}
+
+                    {# Delete #}
+                    {% if is_granted('ROLE_ADMIN') %}
+                        <form method="post" action="{{ path('club_delete', {'id': club.id}) }}" onsubmit="return confirm('Supprimer ce club ?');" style="margin:0;">
+                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ club.id) }}">
+                            <button style="background:#fee2e2; color:#991b1b; border:none; border-radius:30px; padding:12px 22px; font-weight:700; cursor:pointer; font-size:0.88rem;">
+                                🗑️ Supprimer
+                            </button>
+                        </form>
+                    {% endif %}
+
+                </div>
+            </div>
+        </div>
+
+        {# Right: info card #}
+        <div class="col-lg-4">
+            <div style="background:white; border-radius:20px; padding:28px; box-shadow:0 4px 24px rgba(0,0,0,0.08); position:sticky; top:20px;">
+
+                <h5 style="font-weight:700; color:#9ca3af; font-size:0.85rem; text-transform:uppercase; letter-spacing:.05em; margin-bottom:20px;">Informations</h5>
+
+                <div style="display:flex; flex-direction:column; gap:16px;">
+
+                    <div style="display:flex; gap:14px; align-items:center;">
+                        <div style="width:40px; height:40px; background:#ede9fe; border-radius:12px; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:1.1rem;">🏷️</div>
+                        <div>
+                            <p style="margin:0; font-size:0.75rem; color:#9ca3af; font-weight:600;">Domaine</p>
+                            <p style="margin:0; font-weight:700; color:#1a1a2e; font-size:0.92rem;">{{ club.domaine }}</p>
+                        </div>
+                    </div>
+
+                    <div style="display:flex; gap:14px; align-items:center;">
+                        <div style="width:40px; height:40px; background:{% if club.status == 'Actif' %}#d1fae5{% elseif club.status == 'En attente' %}#fef9c3{% else %}#fee2e2{% endif %}; border-radius:12px; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:1.1rem;">
+                            {% if club.status == 'Actif' %}✅{% elseif club.status == 'En attente' %}⏳{% else %}❌{% endif %}
+                        </div>
+                        <div>
+                            <p style="margin:0; font-size:0.75rem; color:#9ca3af; font-weight:600;">Statut</p>
+                            <p style="margin:0; font-weight:700; color:#1a1a2e; font-size:0.92rem;">{{ club.status }}</p>
+                        </div>
+                    </div>
+
+                    {% if club.president %}
+                    <div style="display:flex; gap:14px; align-items:center;">
+                        <div style="width:40px; height:40px; background:linear-gradient(135deg,#4f46e5,#7c3aed); border-radius:12px; display:flex; align-items:center; justify-content:center; color:white; font-weight:800; font-size:0.9rem; flex-shrink:0;">
+                            {{ club.president.nom|slice(0,1)|upper }}
+                        </div>
+                        <div>
+                            <p style="margin:0; font-size:0.75rem; color:#9ca3af; font-weight:600;">Président</p>
+                            <p style="margin:0; font-weight:700; color:#1a1a2e; font-size:0.92rem;">{{ club.president.nom }}</p>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                </div>
+
+                <hr style="border-color:#f1f5f9; margin:20px 0;">
+
+                <a href="{{ path('club_index') }}" style="display:block; text-align:center; color:#9ca3af; text-decoration:none; font-weight:600; font-size:0.88rem;">
+                    ← Retour aux clubs
+                </a>
+            </div>
+        </div>
+
+    </div>
+</div>
+
 {% endblock %}

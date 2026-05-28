@@ -1,34 +1,130 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Clubs{% endblock %}
+{% block title %}Clubs — ClubHub{% endblock %}
 
 {% block body %}
 
-<div class="container mt-5">
+{# ── Hero Banner ── #}
+<div style="background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%); padding:64px 0 80px; margin-bottom:-40px; position:relative; overflow:hidden;">
+    <div style="position:absolute;inset:0;background:url('data:image/svg+xml,<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 100\"><circle cx=\"20\" cy=\"20\" r=\"40\" fill=\"rgba(79,70,229,0.08)\"/><circle cx=\"80\" cy=\"80\" r=\"50\" fill=\"rgba(124,58,237,0.06)\"/></svg>') center/cover;"></div>
+    <div class="container" style="position:relative;">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div>
+                <p style="color:#a5b4fc; font-weight:600; font-size:0.85rem; text-transform:uppercase; letter-spacing:.1em; margin-bottom:8px;">🏆 ClubHub</p>
+                <h1 style="color:white; font-weight:800; font-size:2.4rem; margin:0; line-height:1.2;">Découvrez nos Clubs</h1>
+                <p style="color:#94a3b8; margin-top:10px; font-size:1rem;">Rejoignez une communauté qui vous ressemble</p>
+            </div>
+            <div class="d-flex gap-3 align-items-center flex-wrap">
+                <div style="background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.12); border-radius:14px; padding:14px 22px; text-align:center;">
+                    <p style="color:white; font-weight:800; font-size:1.6rem; margin:0;">{{ clubs|length }}</p>
+                    <p style="color:#94a3b8; font-size:0.78rem; margin:0;">Club{% if clubs|length != 1 %}s{% endif %}</p>
+                </div>
+                {% if is_granted('ROLE_PRESIDENT') %}
+                <a href="{{ path('club_new') }}"
+                   style="background:linear-gradient(135deg,#4f46e5,#7c3aed); color:white; border-radius:30px; padding:14px 28px; font-weight:700; text-decoration:none; display:inline-flex; align-items:center; gap:8px; box-shadow:0 4px 20px rgba(79,70,229,0.45); transition:transform .2s;" class="new-club-btn">
+                    <span style="font-size:1.2rem;">+</span> Créer un club
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
 
-    <div class="d-flex justify-content-between mb-3">
-        <h2>Clubs</h2>
-
+{# ── Cards ── #}
+<div class="container mb-5" style="position:relative; z-index:1;">
+    {% if clubs|length == 0 %}
+    <div style="background:white; border-radius:20px; padding:70px; text-align:center; box-shadow:0 4px 24px rgba(0,0,0,0.06);">
+        <div style="font-size:3.5rem; margin-bottom:16px;">🏛️</div>
+        <h4 style="color:#9ca3af; font-weight:600; margin-bottom:16px;">Aucun club disponible pour le moment</h4>
         {% if is_granted('ROLE_PRESIDENT') %}
-        <a href="{{ path('club_new') }}" class="btn btn-primary">
-            <i class="bi bi-plus-circle me-1"></i>Ajouter Club
+        <a href="{{ path('club_new') }}" style="background:linear-gradient(135deg,#4f46e5,#7c3aed); color:white; border-radius:25px; padding:12px 28px; font-weight:700; text-decoration:none; display:inline-block;">
+            Créer le premier club
         </a>
         {% endif %}
     </div>
-
-    {% for club in clubs %}
-        <div class="card mb-3 p-3">
-            <h5>{{ club.nom }}</h5>
-            <p>{{ club.description }}</p>
-
-            <a href="{{ path('club_show', {'id': club.id}) }}" class="btn btn-sm btn-info">
-                Voir
-            </a>
-        </div>
     {% else %}
-        <p>Aucun club disponible</p>
-    {% endfor %}
+    <div class="row g-4">
+        {% for club in clubs %}
+        <div class="col-xl-4 col-md-6">
+            <div class="club-card" style="background:white; border-radius:20px; overflow:hidden; box-shadow:0 4px 20px rgba(0,0,0,0.07); height:100%; display:flex; flex-direction:column; transition:transform .25s, box-shadow .25s; border:1px solid #f1f0ff;">
 
+                {# Cover gradient with logo #}
+                <div style="height:120px; background:linear-gradient(135deg,
+                    {% if loop.index % 5 == 1 %}#4f46e5,#7c3aed
+                    {% elseif loop.index % 5 == 2 %}#0ea5e9,#6366f1
+                    {% elseif loop.index % 5 == 3 %}#10b981,#0ea5e9
+                    {% elseif loop.index % 5 == 4 %}#f59e0b,#ef4444
+                    {% else %}#ec4899,#8b5cf6
+                    {% endif %}); position:relative; display:flex; align-items:center; justify-content:center;">
+                    {% if club.logo %}
+                        <img src="{{ asset('uploads/logos/' ~ club.logo) }}"
+                             alt="{{ club.nom }}"
+                             style="width:72px; height:72px; border-radius:50%; object-fit:cover; border:3px solid rgba(255,255,255,0.8); box-shadow:0 4px 12px rgba(0,0,0,0.2);">
+                    {% else %}
+                        <div style="width:72px; height:72px; border-radius:50%; background:rgba(255,255,255,0.2); display:flex; align-items:center; justify-content:center; font-size:2rem; border:3px solid rgba(255,255,255,0.4);">
+                            {{ club.nom|slice(0,1)|upper }}
+                        </div>
+                    {% endif %}
+
+                    {# Status badge #}
+                    <span style="position:absolute; top:12px; right:14px;
+                        background:{% if club.status == 'Actif' %}rgba(16,185,129,0.9){% elseif club.status == 'En attente' %}rgba(245,158,11,0.9){% else %}rgba(239,68,68,0.9){% endif %};
+                        color:white; border-radius:20px; padding:3px 12px; font-size:0.72rem; font-weight:700; backdrop-filter:blur(4px);">
+                        {{ club.status }}
+                    </span>
+                </div>
+
+                {# Content #}
+                <div style="padding:22px 24px; flex:1; display:flex; flex-direction:column;">
+
+                    {# Domain tag #}
+                    <span style="background:#ede9fe; color:#6d28d9; border-radius:20px; padding:3px 12px; font-size:0.72rem; font-weight:700; display:inline-block; margin-bottom:10px; width:fit-content;">
+                        {{ club.domaine }}
+                    </span>
+
+                    <h5 style="font-weight:800; color:#1a1a2e; margin-bottom:8px; font-size:1.05rem;">{{ club.nom }}</h5>
+
+                    <p style="color:#9ca3af; font-size:0.85rem; line-height:1.6; flex:1; margin-bottom:20px;">
+                        {% if club.description %}
+                            {{ club.description|slice(0, 90) }}{% if club.description|length > 90 %}…{% endif %}
+                        {% else %}
+                            <em>Aucune description disponible.</em>
+                        {% endif %}
+                    </p>
+
+                    {# President #}
+                    {% if club.president %}
+                    <div style="display:flex; align-items:center; gap:10px; margin-bottom:18px; padding:10px 14px; background:#f8faff; border-radius:10px;">
+                        <div style="width:32px; height:32px; border-radius:50%; background:linear-gradient(135deg,#4f46e5,#7c3aed); display:flex; align-items:center; justify-content:center; color:white; font-weight:800; font-size:0.8rem; flex-shrink:0;">
+                            {{ club.president.nom|slice(0,1)|upper }}
+                        </div>
+                        <div>
+                            <p style="margin:0; font-size:0.78rem; color:#9ca3af;">Président</p>
+                            <p style="margin:0; font-size:0.85rem; font-weight:700; color:#1a1a2e;">{{ club.president.nom }}</p>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <a href="{{ path('club_show', {'id': club.id}) }}"
+                       style="background:linear-gradient(135deg,#4f46e5,#7c3aed); color:white; border-radius:25px; padding:11px 0; font-weight:700; font-size:0.9rem; text-decoration:none; text-align:center; display:block; transition:opacity .2s;">
+                        Voir le club →
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
 </div>
+
+<style>
+.club-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 12px 36px rgba(79,70,229,0.15) !important;
+}
+.new-club-btn:hover {
+    transform: translateY(-2px);
+}
+</style>
 
 {% endblock %}

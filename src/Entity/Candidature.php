@@ -27,6 +27,7 @@ class Candidature
     private ?User $user = null;
 
     #[ORM\ManyToOne(targetEntity: Recruitment::class)]
+    #[ORM\JoinColumn(onDelete: "CASCADE")]
     private ?Recruitment $recruitment = null;
 
     public function getId(): ?int

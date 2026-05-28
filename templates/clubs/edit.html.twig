@@ -1,5 +1,5 @@
 {% extends 'base.html.twig' %}
-{% block title %}Modifier {{ club.name }} — ClubHub{% endblock %}
+{% block title %}Modifier {{ club.nom }} — ClubHub{% endblock %}
 
 {% block body %}
 
@@ -7,7 +7,7 @@
 <nav class="mb-4 fade-up" style="font-size:.82rem;color:var(--muted)">
     <a href="{{ path('club_index') }}" class="text-accent">Clubs</a>
     <i class="bi bi-chevron-right mx-1" style="font-size:.7rem"></i>
-    <a href="{{ path('club_show', {id: club.id}) }}" class="text-accent">{{ club.name }}</a>
+    <a href="{{ path('club_show', {id: club.id}) }}" class="text-accent">{{ club.nom }}</a>
     <i class="bi bi-chevron-right mx-1" style="font-size:.7rem"></i>
     <span>Modifier</span>
 </nav>
@@ -30,20 +30,43 @@
             }) }}
 
                 {# Nom #}
+                {% if clubForm.nom is defined %}
                 <div class="mb-4">
                     <label class="form-label-custom">Nom du club</label>
-                    {{ form_widget(clubForm.name, {'attr': {'class': 'input-custom'}}) }}
-                    {{ form_errors(clubForm.name) }}
+                    {{ form_widget(clubForm.nom, {'attr': {'class': 'input-custom'}}) }}
+                    {{ form_errors(clubForm.nom) }}
                 </div>
+                {% endif %}
 
                 {# Description #}
+                {% if clubForm.description is defined %}
                 <div class="mb-4">
                     <label class="form-label-custom">Description</label>
                     {{ form_widget(clubForm.description, {'attr': {'class': 'input-custom', 'rows': 5}}) }}
                     {{ form_errors(clubForm.description) }}
                 </div>
+                {% endif %}
+
+                {# Domaine #}
+                {% if clubForm.domaine is defined %}
+                <div class="mb-4">
+                    <label class="form-label-custom">Domaine</label>
+                    {{ form_widget(clubForm.domaine, {'attr': {'class': 'input-custom'}}) }}
+                    {{ form_errors(clubForm.domaine) }}
+                </div>
+                {% endif %}
+
+                {# Status #}
+                {% if clubForm.status is defined %}
+                <div class="mb-4">
+                    <label class="form-label-custom">Statut</label>
+                    {{ form_widget(clubForm.status, {'attr': {'class': 'input-custom'}}) }}
+                    {{ form_errors(clubForm.status) }}
+                </div>
+                {% endif %}
 
                 {# Logo actuel + upload nouveau #}
+                {% if clubForm.logoFile is defined %}
                 <div class="mb-4">
                     <label class="form-label-custom">Logo du club</label>
 
@@ -78,6 +101,7 @@
                         <p id="preview-name" style="font-size:.78rem;color:var(--muted);margin-top:.4rem"></p>
                     </div>
                 </div>
+                {% endif %}
 
                 {# Buttons #}
                 <div class="d-flex gap-2 pt-2">

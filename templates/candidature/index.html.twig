@@ -1,46 +1,98 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Candidatures{% endblock %}
+{% block title %}Candidatures reçues — ClubHub{% endblock %}
 
 {% block body %}
-<div class="container mt-5">
-    <h2>Liste des candidatures reçues</h2>
+<div class="container mt-5 mb-5">
 
-    <table class="table mt-4">
-        <thead>
-            <tr>
-                <th>Candidat</th>
-                <th>Recrutement</th>
-                <th>Message</th>
-                <th>Statut</th>
-                <th>Date</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
+    {# ── Header ── #}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 style="font-weight:800; color:#1a1a2e; margin:0;">Candidatures reçues</h2>
+            <p style="color:#9ca3af; margin-top:4px;">Gérez les demandes d'adhésion aux clubs</p>
+        </div>
+        <span style="background:#ede9fe; color:#4f46e5; border-radius:20px; padding:6px 18px; font-weight:700; font-size:0.9rem;">
+            {{ candidatures|length }} candidature{% if candidatures|length != 1 %}s{% endif %}
+        </span>
+    </div>
+
+    {% if candidatures|length == 0 %}
+    <div style="background:white; border-radius:20px; padding:60px; text-align:center; box-shadow:0 4px 24px rgba(0,0,0,0.06);">
+        <div style="font-size:3rem; margin-bottom:16px;">📭</div>
+        <h4 style="color:#9ca3af; font-weight:600;">Aucune candidature pour le moment</h4>
+    </div>
+    {% else %}
+
+    {# ── Cards grid ── #}
+    <div class="row g-4">
         {% for candidature in candidatures %}
-            <tr>
-                <td>{{ candidature.user.nom }}</td>
-                <td>{{ candidature.recruitment.titre }}</td>
-                <td>{{ candidature.message }}</td>
-                <td>{{ candidature.status }}</td>
-                <td>{{ candidature.dateCandidature ? candidature.dateCandidature|date('d/m/Y') : '' }}</td>
-                <td>
-                    <div class="d-flex gap-2">
-                        <a href="{{ path('app_candidature_edit', {'id': candidature.id}) }}" class="btn btn-sm btn-info">Modifier statut</a>
-                        <form method="post" action="{{ path('app_candidature_delete', {'id': candidature.id}) }}" onsubmit="return confirm('Supprimer ?');">
-                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ candidature.id) }}">
-                            <button class="btn btn-sm btn-danger">Supprimer</button>
-                        </form>
+        <div class="col-lg-6">
+            <div style="background:white; border-radius:18px; padding:28px; box-shadow:0 2px 16px rgba(0,0,0,0.07); border:1px solid #f1f0ff; height:100%; transition:transform .2s, box-shadow .2s;" class="candidature-card">
+
+                {# Status badge + date #}
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    {% if candidature.status == 'Acceptée' %}
+                        <span style="background:#d1fae5; color:#065f46; border-radius:20px; padding:5px 16px; font-size:0.78rem; font-weight:700;">✓ Acceptée</span>
+                    {% elseif candidature.status == 'Refusée' %}
+                        <span style="background:#fee2e2; color:#991b1b; border-radius:20px; padding:5px 16px; font-size:0.78rem; font-weight:700;">✗ Refusée</span>
+                    {% else %}
+                        <span style="background:#ede9fe; color:#4f46e5; border-radius:20px; padding:5px 16px; font-size:0.78rem; font-weight:700;">⏳ En attente</span>
+                    {% endif %}
+                    <small style="color:#d1d5db; font-size:0.8rem;">
+                        {{ candidature.dateCandidature ? candidature.dateCandidature|date('d/m/Y') : '' }}
+                    </small>
+                </div>
+
+                {# Candidate name #}
+                <div class="d-flex align-items-center gap-3 mb-3">
+                    <div style="width:44px; height:44px; background:linear-gradient(135deg,#4f46e5,#7c3aed); border-radius:50%; display:flex; align-items:center; justify-content:center; color:white; font-weight:800; font-size:1rem; flex-shrink:0;">
+                        {{ candidature.user.nom|slice(0,1)|upper }}
                     </div>
-                </td>
-            </tr>
-        {% else %}
-            <tr>
-                <td colspan="6">Aucune candidature trouvée</td>
-            </tr>
+                    <div>
+                        <p style="font-weight:700; color:#1a1a2e; margin:0; font-size:1rem;">{{ candidature.user.nom }}</p>
+                        <small style="color:#9ca3af;">Candidat</small>
+                    </div>
+                </div>
+
+                {# Recruitment title #}
+                <div style="background:#f8faff; border-radius:10px; padding:10px 14px; margin-bottom:14px;">
+                    <small style="color:#9ca3af; font-weight:600; text-transform:uppercase; font-size:0.72rem;">Poste</small>
+                    <p style="color:#4f46e5; font-weight:700; margin:2px 0 0; font-size:0.93rem;">{{ candidature.recruitment.titre }}</p>
+                </div>
+
+                {# Message preview #}
+                <p style="color:#6b7280; font-size:0.87rem; line-height:1.6; margin-bottom:20px;">
+                    {{ candidature.message|slice(0, 110) }}{% if candidature.message|length > 110 %}…{% endif %}
+                </p>
+
+                {# Actions #}
+                <div class="d-flex gap-2">
+                    <a href="{{ path('app_candidature_edit', {'id': candidature.id}) }}"
+                       style="background:linear-gradient(135deg,#4f46e5,#7c3aed); color:white; border-radius:20px; padding:8px 20px; font-size:0.82rem; font-weight:700; text-decoration:none; flex:1; text-align:center; transition:opacity .2s;">
+                        ✏️ Traiter
+                    </a>
+                    <form method="post" action="{{ path('app_candidature_delete', {'id': candidature.id}) }}"
+                          onsubmit="return confirm('Supprimer cette candidature ?');" style="margin:0;">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ candidature.id) }}">
+                        <button type="submit"
+                                style="background:#fee2e2; color:#991b1b; border:none; border-radius:20px; padding:8px 18px; font-size:0.82rem; font-weight:700; cursor:pointer; transition:background .2s;">
+                            🗑️
+                        </button>
+                    </form>
+                </div>
+
+            </div>
+        </div>
         {% endfor %}
-        </tbody>
-    </table>
+    </div>
+    {% endif %}
+
 </div>
+
+<style>
+.candidature-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 28px rgba(79,70,229,0.13) !important;
+}
+</style>
 {% endblock %}

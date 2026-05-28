@@ -31,8 +31,21 @@ class ClubController extends AbstractController
     #[Route('', name: 'club_index')]
     public function index(): Response
     {
+        $allClubs = $this->clubRepository->findAll();
+        $clubs = [];
+
+        foreach ($allClubs as $club) {
+            if ($this->isGranted('ROLE_ADMIN')) {
+                $clubs[] = $club;
+            } elseif ($club->getStatus() === 'Actif') {
+                $clubs[] = $club;
+            } elseif ($this->getUser() && $club->getPresident() === $this->getUser()) {
+                $clubs[] = $club;
+            }
+        }
+
         return $this->render('clubs/index.html.twig', [
-            'clubs' => $this->clubRepository->findAll(),
+            'clubs' => $clubs,
         ]);
     }
 
@@ -128,6 +141,12 @@ class ClubController extends AbstractController
     #[Route('/{id}', name: 'club_show', methods: ['GET'])]
     public function show(Club $club): Response
     {
+        if ($club->getStatus() !== 'Actif') {
+            if (!$this->isGranted('ROLE_ADMIN') && (!$this->getUser() || $club->getPresident() !== $this->getUser())) {
+                throw $this->createAccessDeniedException('Ce club n\'est pas actif.');
+            }
+        }
+
         $isMember = false;
         if ($this->getUser()) {
             $existing = $this->clubMemberRepository->findOneBy([
@@ -143,36 +162,19 @@ class ClubController extends AbstractController
         ]);
     }
 
-    // ─── REJOINDRE UN CLUB (Tâche 6) ──────────────────────────────────────────
-    #[Route('/{id}/join', name: 'club_join', methods: ['POST'])]
+    // ─── POSTULER A UN CLUB ──────────────────────────────────────────
+    #[Route('/{id}/postuler', name: 'club_postuler', methods: ['POST'])]
     #[IsGranted('ROLE_USER')]
-    public function join(Club $club): Response
+    public function postuler(Club $club): Response
     {
-        /** @var \App\Entity\User $user */
-        $user = $this->getUser();
-
-        // Vérifier si déjà membre
-        $existing = $this->clubMemberRepository->findOneBy([
-            'user' => $user,
-            'club' => $club,
-        ]);
-
-        if ($existing) {
-            $this->addFlash('warning', 'Vous êtes déjà membre de ce club.');
-            return $this->redirectToRoute('club_show', ['id' => $club->getId()]);
+        // Chercher s'il y a un recrutement pour ce club
+        $recruitment = $this->em->getRepository(\App\Entity\Recruitment::class)->findOneBy(['club' => $club], ['id' => 'DESC']);
+        
+        if ($recruitment) {
+            return $this->redirectToRoute('app_recruitment_show', ['id' => $recruitment->getId()]);
         }
 
-        $member = new ClubMember();
-        $member->setUser($user);
-        $member->setClub($club);
-        $member->setRole('membre');
-        $member->setJoinedAt(new \DateTimeImmutable());
-
-        $this->em->persist($member);
-        $this->em->flush();
-
-        $this->addFlash('success', 'Vous avez rejoint le club « ' . $club->getNom() . ' » avec succès !');
-
+        $this->addFlash('info', 'Il n\'y a pas de recrutement ouvert pour ce club pour le moment.');
         return $this->redirectToRoute('club_show', ['id' => $club->getId()]);
     }
 
@@ -270,7 +272,17 @@ class ClubController extends AbstractController
     #[IsGranted('ROLE_RESPONSABLE')]
     public function edit(Request $request, Club $club, SluggerInterface $slugger): Response
     {
-        $form = $this->createForm(ClubType::class, $club);
+        $mode = 'responsable';
+        if ($this->getUser() === $club->getPresident()) {
+            $mode = 'president';
+        }
+        if ($this->isGranted('ROLE_ADMIN')) {
+            $mode = 'all';
+        }
+
+        $form = $this->createForm(ClubType::class, $club, [
+            'role_mode' => $mode
+        ]);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
@@ -296,7 +308,7 @@ class ClubController extends AbstractController
 
         return $this->render('clubs/edit.html.twig', [
             'club' => $club,
-            'form' => $form->createView(),
+            'clubForm' => $form->createView(),
         ]);
     }
 

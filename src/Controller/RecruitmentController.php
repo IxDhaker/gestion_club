@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Recruitment;
 use App\Form\RecruitmentType;
+use App\Repository\CandidatureRepository;
 use App\Repository\ClubRepository;
 use App\Repository\RecruitmentRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -18,10 +19,15 @@ final class RecruitmentController extends AbstractController
 {
     #[Route(name: 'app_recruitment_index', methods: ['GET'])]
     #[IsGranted('ROLE_USER')]
-    public function index(RecruitmentRepository $recruitmentRepository): Response
+    public function index(RecruitmentRepository $recruitmentRepository, CandidatureRepository $candidatureRepository): Response
     {
+        /** @var \App\Entity\User|null $user */
+        $user = $this->getUser();
+        $appliedIds = $user ? $candidatureRepository->findAppliedRecruitmentIds($user) : [];
+
         return $this->render('recruitment/index.html.twig', [
             'recruitments' => $recruitmentRepository->findAll(),
+            'appliedIds'   => $appliedIds,
         ]);
     }
 
@@ -58,10 +64,17 @@ final class RecruitmentController extends AbstractController
 
     #[Route('/{id}', name: 'app_recruitment_show', methods: ['GET'])]
     #[IsGranted('ROLE_USER')]
-    public function show(Recruitment $recruitment): Response
+    public function show(Recruitment $recruitment, CandidatureRepository $candidatureRepository): Response
     {
+        /** @var \App\Entity\User|null $user */
+        $user = $this->getUser();
+        $alreadyApplied = $user
+            ? in_array($recruitment->getId(), $candidatureRepository->findAppliedRecruitmentIds($user), true)
+            : false;
+
         return $this->render('recruitment/show.html.twig', [
-            'recruitment' => $recruitment,
+            'recruitment'   => $recruitment,
+            'alreadyApplied' => $alreadyApplied,
         ]);
     }
 

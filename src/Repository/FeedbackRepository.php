@@ -2,6 +2,7 @@
 
 namespace App\Repository;
 
+use App\Entity\Club;
 use App\Entity\Feedback;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
@@ -16,28 +17,20 @@ class FeedbackRepository extends ServiceEntityRepository
         parent::__construct($registry, Feedback::class);
     }
 
-    //    /**
-    //     * @return Feedback[] Returns an array of Feedback objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('f')
-    //            ->andWhere('f.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('f.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
-
-    //    public function findOneBySomeField($value): ?Feedback
-    //    {
-    //        return $this->createQueryBuilder('f')
-    //            ->andWhere('f.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+    /**
+     * Returns feedbacks whose event belongs to one of the given clubs.
+     *
+     * @param Club[] $clubs
+     * @return Feedback[]
+     */
+    public function findByClubs(array $clubs): array
+    {
+        return $this->createQueryBuilder('f')
+            ->join('f.event', 'e')
+            ->andWhere('e.club IN (:clubs)')
+            ->setParameter('clubs', $clubs)
+            ->orderBy('f.createdAt', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
 }

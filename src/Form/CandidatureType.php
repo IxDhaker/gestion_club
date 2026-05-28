@@ -21,7 +21,7 @@ class CandidatureType extends AbstractType
         $builder
             ->add('recruitment', EntityType::class, [
                 'class' => Recruitment::class,
-                'choice_label' => 'title',
+                'choice_label' => 'titre',
                 'label' => 'Recrutement'
             ])
             ->add('message', TextareaType::class, [

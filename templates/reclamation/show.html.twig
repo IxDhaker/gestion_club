@@ -52,6 +52,8 @@
                        class="btn" style="background:#4f46e5; color:white; border-radius:25px; padding:10px 28px; font-weight:600;">
                         Modifier
                     </a>
+                    {% endif %}
+                    {% if is_granted('ROLE_ADMIN') or (app.user and reclamation.user == app.user) %}
                     {{ include('reclamation/_delete_form.html.twig') }}
                     {% endif %}
                 </div>

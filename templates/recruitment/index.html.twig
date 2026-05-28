@@ -48,10 +48,16 @@
                         Modifier
                     </a>
                     {% elseif is_granted('ROLE_USER') %}
-                    <a href="{{ path('app_candidature_new') }}?recruitment_id={{ recruitment.id }}" 
-                       class="btn btn-sm" style="background:#4f46e5; color:white; border-radius:20px; font-weight:600;">
-                        Postuler
-                    </a>
+                        {% if recruitment.id in appliedIds %}
+                        <span style="background:#d1fae5; color:#065f46; border-radius:20px; padding:6px 16px; font-size:0.82rem; font-weight:700;">
+                            ✓ Envoyé
+                        </span>
+                        {% else %}
+                        <a href="{{ path('app_candidature_new') }}?recruitment_id={{ recruitment.id }}" 
+                           class="btn btn-sm" style="background:#4f46e5; color:white; border-radius:20px; font-weight:600;">
+                            Postuler
+                        </a>
+                        {% endif %}
                     {% endif %}
                 </div>
             </div>

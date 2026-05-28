@@ -25,7 +25,18 @@ class EventController extends AbstractController
     #[Route('', name: 'event_index', methods: ['GET'])]
     public function index(): Response
     {
-        $events = $this->eventRepository->findBy([], ['dateEvent' => 'ASC']);
+        $allEvents = $this->eventRepository->findBy([], ['dateEvent' => 'ASC']);
+        $events = [];
+
+        foreach ($allEvents as $event) {
+            if ($this->isGranted('ROLE_ADMIN')) {
+                $events[] = $event;
+            } elseif ($event->getStatus() === 'Validé') {
+                $events[] = $event;
+            } elseif ($this->getUser() && $event->getClub() && $event->getClub()->getPresident() === $this->getUser()) {
+                $events[] = $event;
+            }
+        }
 
         $participatingIn = [];
         if ($this->getUser()) {
@@ -89,6 +100,11 @@ class EventController extends AbstractController
     #[Route('/{id}', name: 'event_show', methods: ['GET'], requirements: ['id' => '\d+'])]
     public function show(Event $event): Response
     {
+        if ($event->getStatus() !== 'Validé') {
+            if (!$this->isGranted('ROLE_ADMIN') && (!$this->getUser() || ($event->getClub() && $event->getClub()->getPresident() !== $this->getUser()))) {
+                throw $this->createAccessDeniedException('Cet événement n\'est pas encore validé.');
+            }
+        }
         $participants = $this->participationRepository->findBy([
             'event' => $event,
             'status' => 'Inscrit',

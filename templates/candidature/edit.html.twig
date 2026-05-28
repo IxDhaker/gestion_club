@@ -1,16 +1,113 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Modifier Candidature{% endblock %}
+{% block title %}Modifier le statut — ClubHub{% endblock %}
 
 {% block body %}
-<div class="container mt-5">
-    <h2>Modifier la candidature (Statut)</h2>
+<div class="container mt-5 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-7">
 
-    <div class="card p-4 mt-4" style="max-width: 600px;">
-        {{ form_start(form) }}
-            {{ form_widget(form) }}
-            <button class="btn btn-primary mt-3">Enregistrer</button>
-        {{ form_end(form) }}
+            {# ── Header ── #}
+            <div class="mb-4 text-center">
+                <div style="width:64px; height:64px; background:linear-gradient(135deg,#0ea5e9,#6366f1); border-radius:18px; display:inline-flex; align-items:center; justify-content:center; margin-bottom:16px; box-shadow:0 8px 24px rgba(99,102,241,0.35);">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                </div>
+                <h2 style="font-weight:800; color:#1a1a2e; font-size:1.7rem; margin:0;">Traiter la candidature</h2>
+                <p style="color:#9ca3af; margin-top:6px;">Candidature de <strong style="color:#4f46e5;">{{ candidature.user.nom }}</strong> pour <strong style="color:#4f46e5;">{{ candidature.recruitment.titre }}</strong></p>
+            </div>
+
+            {# ── Summary card ── #}
+            <div style="background:linear-gradient(135deg,#f8faff,#f1f0ff); border-radius:16px; padding:24px; margin-bottom:24px; border:1px solid #e0e7ff;">
+                <div class="row g-3">
+                    <div class="col-sm-6">
+                        <small style="color:#9ca3af; font-weight:600; text-transform:uppercase; font-size:0.75rem;">Candidat</small>
+                        <p style="color:#1a1a2e; font-weight:700; margin:4px 0 0;">{{ candidature.user.nom }}</p>
+                    </div>
+                    <div class="col-sm-6">
+                        <small style="color:#9ca3af; font-weight:600; text-transform:uppercase; font-size:0.75rem;">Poste</small>
+                        <p style="color:#1a1a2e; font-weight:700; margin:4px 0 0;">{{ candidature.recruitment.titre }}</p>
+                    </div>
+                    <div class="col-12">
+                        <small style="color:#9ca3af; font-weight:600; text-transform:uppercase; font-size:0.75rem;">Lettre de motivation</small>
+                        <p style="color:#555; margin:6px 0 0; line-height:1.6; font-size:0.92rem;">{{ candidature.message }}</p>
+                    </div>
+                    <div class="col-sm-6">
+                        <small style="color:#9ca3af; font-weight:600; text-transform:uppercase; font-size:0.75rem;">Date de candidature</small>
+                        <p style="color:#1a1a2e; font-weight:600; margin:4px 0 0;">{{ candidature.dateCandidature ? candidature.dateCandidature|date('d/m/Y') : '—' }}</p>
+                    </div>
+                    <div class="col-sm-6">
+                        <small style="color:#9ca3af; font-weight:600; text-transform:uppercase; font-size:0.75rem;">Statut actuel</small>
+                        <p style="margin:6px 0 0;">
+                            {% if candidature.status == 'Acceptée' %}
+                                <span style="background:#d1fae5; color:#065f46; border-radius:20px; padding:4px 14px; font-size:0.8rem; font-weight:700;">✓ {{ candidature.status }}</span>
+                            {% elseif candidature.status == 'Refusée' %}
+                                <span style="background:#fee2e2; color:#991b1b; border-radius:20px; padding:4px 14px; font-size:0.8rem; font-weight:700;">✗ {{ candidature.status }}</span>
+                            {% else %}
+                                <span style="background:#ede9fe; color:#4f46e5; border-radius:20px; padding:4px 14px; font-size:0.8rem; font-weight:700;">⏳ {{ candidature.status }}</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            {# ── Form card ── #}
+            <div style="background:white; border-radius:20px; padding:36px; box-shadow:0 4px 24px rgba(0,0,0,0.08); border:1px solid #f1f0ff;">
+
+                {{ form_start(form) }}
+
+                {# Status field (shown only to responsable/admin) #}
+                {% if form.status is defined %}
+                <div class="mb-4">
+                    <label style="font-weight:700; color:#1a1a2e; font-size:0.85rem; text-transform:uppercase; letter-spacing:.05em; margin-bottom:12px; display:flex; align-items:center; gap:8px;">
+                        <span style="width:8px; height:8px; background:#10b981; border-radius:50%; display:inline-block;"></span>
+                        Nouveau statut
+                    </label>
+                    <div class="d-flex gap-3 flex-wrap mb-2">
+                        {% for choice in form.status.vars.choices %}
+                        <label style="flex:1; min-width:120px; cursor:pointer;">
+                            <input type="radio" name="{{ form.status.vars.full_name }}" value="{{ choice.value }}"
+                                   {% if form.status.vars.data == choice.value %}checked{% endif %}
+                                   style="display:none;" class="status-radio">
+                            <div class="status-card {% if choice.value == 'Acceptée' %}status-accept{% elseif choice.value == 'Refusée' %}status-refuse{% else %}status-pending{% endif %}"
+                                 style="border-radius:14px; padding:16px; text-align:center; border:2px solid #e5e7eb; cursor:pointer; transition:all .2s; font-weight:700; font-size:0.9rem;">
+                                {% if choice.value == 'Acceptée' %}✓ Acceptée
+                                {% elseif choice.value == 'Refusée' %}✗ Refusée
+                                {% else %}⏳ En attente{% endif %}
+                            </div>
+                        </label>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% else %}
+                {# Non-admin view: only shows the form fields that exist #}
+                {{ form_widget(form) }}
+                {% endif %}
+
+                {# Actions #}
+                <div class="d-flex gap-3 align-items-center mt-4">
+                    <button type="submit"
+                            style="background:linear-gradient(135deg,#0ea5e9,#6366f1); color:white; border:none; border-radius:30px; padding:13px 36px; font-weight:700; font-size:0.95rem; cursor:pointer; box-shadow:0 4px 14px rgba(99,102,241,0.4); transition:transform .15s; flex:1;">
+                        💾 Enregistrer la décision
+                    </button>
+                    <a href="{{ path('app_candidature_index') }}"
+                       style="color:#9ca3af; text-decoration:none; font-weight:600; font-size:0.9rem; white-space:nowrap;">
+                        ← Retour
+                    </a>
+                </div>
+
+                {{ form_end(form) }}
+            </div>
+
+        </div>
     </div>
 </div>
+
+<style>
+.status-radio:checked + .status-card,
+.status-card:hover { border-color: #4f46e5 !important; }
+.status-accept:hover, input:checked + .status-accept  { background:#d1fae5; border-color:#10b981 !important; color:#065f46; }
+.status-refuse:hover, input:checked + .status-refuse  { background:#fee2e2; border-color:#ef4444 !important; color:#991b1b; }
+.status-pending:hover, input:checked + .status-pending { background:#ede9fe; border-color:#4f46e5 !important; color:#4f46e5; }
+button[type=submit]:hover { transform: translateY(-2px); }
+</style>
 {% endblock %}

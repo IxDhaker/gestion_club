@@ -536,7 +536,7 @@
 						<a href="{{ path('app_recruitment_index') }}" class="nav-link {% if app.request.attributes.get('_route') starts with 'app_recruitment' %}active{% endif %}">
 							<i class="bi bi-megaphone me-1"></i>Recrutements
 						</a>
-						<a href="{{ is_granted('ROLE_RESPONSABLE') ? path('app_reclamation_index') : path('app_reclamation_new') }}" class="nav-link {% if app.request.attributes.get('_route') starts with 'app_reclamation' %}active{% endif %}">
+						<a href="{{ path('app_reclamation_index') }}" class="nav-link {% if app.request.attributes.get('_route') starts with 'app_reclamation' %}active{% endif %}">
 							<i class="bi bi-envelope me-1"></i>Reclamations
 						</a>
 						<a href="{{ is_granted('ROLE_ADMIN') ? path('app_feedback_index') : path('app_feedback_new') }}" class="nav-link {% if app.request.attributes.get('_route') starts with 'app_feedback' %}active{% endif %}">
@@ -567,7 +567,7 @@
 								<a href="{{ path('app_notification_index') }}" role="menuitem">
 									<i class="bi bi-bell"></i>Notifications
 								</a>
-								<a href="{{ path('app_reclamation_mes') }}" role="menuitem">
+								<a href="{{ path('app_reclamation_index') }}" role="menuitem">
 									<i class="bi bi-envelope"></i>Mes Réclamations
 								</a>
 								{% if is_granted('ROLE_PRESIDENT') %}
