@@ -33,7 +33,7 @@
             {# Logo / Avatar #}
             <div style="width:96px; height:96px; border-radius:22px; overflow:hidden; border:3px solid rgba(255,255,255,0.2); flex-shrink:0; box-shadow:0 8px 32px rgba(0,0,0,0.3);">
                 {% if club.logo %}
-                    <img src="{{ asset('uploads/logos/' ~ club.logo) }}" alt="{{ club.nom }}" style="width:100%; height:100%; object-fit:cover;">
+                    <img src="{{ asset('logos/' ~ club.logo) }}" alt="{{ club.nom }}" style="width:100%; height:100%; object-fit:cover;">
                 {% else %}
                     <div style="width:100%; height:100%; background:linear-gradient(135deg,#4f46e5,#7c3aed); display:flex; align-items:center; justify-content:center; color:white; font-weight:800; font-size:2.2rem;">
                         {{ club.nom|slice(0,1)|upper }}

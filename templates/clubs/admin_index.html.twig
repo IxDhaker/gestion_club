@@ -136,7 +136,7 @@ tr[data-status] { display: table-row; }
                     <td>
                         <div class="club-info">
                             {% if club.logo %}
-                                <img src="{{ asset('uploads/logos/' ~ club.logo) }}" alt="{{ club.nom }}" class="club-logo-sm">
+                                <img src="{{ asset('logos/' ~ club.logo) }}" alt="{{ club.nom }}" class="club-logo-sm">
                             {% else %}
                                 <div class="club-logo-placeholder">{{ club.nom|first|upper }}</div>
                             {% endif %}

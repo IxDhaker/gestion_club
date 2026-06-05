@@ -13,6 +13,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Component\String\Slugger\SluggerInterface;
 
 #[Route('/events')]
 class EventController extends AbstractController
@@ -54,7 +55,7 @@ class EventController extends AbstractController
 
     #[Route('/new', name: 'event_new', methods: ['GET', 'POST'])]
     #[IsGranted('ROLE_PRESIDENT')]
-    public function new(Request $request, ClubRepository $clubRepository, EntityManagerInterface $em): Response
+    public function new(Request $request, ClubRepository $clubRepository, EntityManagerInterface $em, SluggerInterface $slugger): Response
     {
         $presidentClubs = $clubRepository->findBy(['president' => $this->getUser()]);
 
@@ -80,6 +81,21 @@ class EventController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             if (!in_array($event->getClub(), $presidentClubs, true)) {
                 throw $this->createAccessDeniedException('Vous ne pouvez pas creer un evenement pour ce club.');
+            }
+
+            /** @var \Symfony\Component\HttpFoundation\File\UploadedFile|null $photoFile */
+            $photoFile = $form->has('photoFile') ? $form->get('photoFile')->getData() : null;
+
+            if ($photoFile) {
+                $safeFilename = $slugger->slug(pathinfo($photoFile->getClientOriginalName(), PATHINFO_FILENAME));
+                $newFilename = $safeFilename.'-'.uniqid().'.'.$photoFile->guessExtension();
+
+                $photoFile->move(
+                    $this->getParameter('events_directory'),
+                    $newFilename
+                );
+
+                $event->setPhoto($newFilename);
             }
 
             $event->setStatus('En attente');
@@ -137,7 +153,7 @@ class EventController extends AbstractController
 
     #[Route('/{id}/edit', name: 'event_edit', methods: ['GET', 'POST'], requirements: ['id' => '\d+'])]
     #[IsGranted('ROLE_PRESIDENT')]
-    public function edit(Event $event, Request $request, ClubRepository $clubRepository, EntityManagerInterface $em): Response
+    public function edit(Event $event, Request $request, ClubRepository $clubRepository, EntityManagerInterface $em, SluggerInterface $slugger): Response
     {
         $presidentClubs = $clubRepository->findBy(['president' => $this->getUser()]);
 
@@ -154,6 +170,21 @@ class EventController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             if (!in_array($event->getClub(), $presidentClubs, true)) {
                 throw $this->createAccessDeniedException('Vous ne pouvez pas transferer cet evenement vers ce club.');
+            }
+
+            /** @var \Symfony\Component\HttpFoundation\File\UploadedFile|null $photoFile */
+            $photoFile = $form->has('photoFile') ? $form->get('photoFile')->getData() : null;
+
+            if ($photoFile) {
+                $safeFilename = $slugger->slug(pathinfo($photoFile->getClientOriginalName(), PATHINFO_FILENAME));
+                $newFilename = $safeFilename.'-'.uniqid().'.'.$photoFile->guessExtension();
+
+                $photoFile->move(
+                    $this->getParameter('events_directory'),
+                    $newFilename
+                );
+
+                $event->setPhoto($newFilename);
             }
 
             $event->setStatus('En attente');
