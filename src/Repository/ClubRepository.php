@@ -16,28 +16,42 @@ class ClubRepository extends ServiceEntityRepository
         parent::__construct($registry, Club::class);
     }
 
-    //    /**
-    //     * @return Club[] Returns an array of Club objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('c')
-    //            ->andWhere('c.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('c.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
+    /**
+     * Find clubs where the user is either the president OR a member with the role 'Responsable'
+     */
+    public function findManagedClubs(\App\Entity\User $user): array
+    {
+        return $this->createQueryBuilder('c')
+            ->leftJoin('App\Entity\ClubMember', 'cm', 'WITH', 'cm.club = c AND cm.user = :user AND cm.role = :roleResp')
+            ->where('c.president = :user')
+            ->orWhere('cm.id IS NOT NULL')
+            ->setParameter('user', $user)
+            ->setParameter('roleResp', 'Responsable')
+            ->getQuery()
+            ->getResult();
+    }
 
-    //    public function findOneBySomeField($value): ?Club
-    //    {
-    //        return $this->createQueryBuilder('c')
-    //            ->andWhere('c.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+    /**
+     * Check if a user is the president or a 'Responsable' of the specific club
+     */
+    public function isManager(\App\Entity\Club $club, \App\Entity\User $user): bool
+    {
+        if ($club->getPresident() === $user) {
+            return true;
+        }
+
+        $qb = $this->getEntityManager()->createQueryBuilder();
+        $count = $qb->select('count(cm.id)')
+            ->from('App\Entity\ClubMember', 'cm')
+            ->where('cm.club = :club')
+            ->andWhere('cm.user = :user')
+            ->andWhere('cm.role = :roleResp')
+            ->setParameter('club', $club)
+            ->setParameter('user', $user)
+            ->setParameter('roleResp', 'Responsable')
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        return $count > 0;
+    }
 }

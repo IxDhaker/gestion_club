@@ -30,14 +30,9 @@ final class FeedbackController extends AbstractController
         // Admin and Etudiant see all feedbacks
         if ($this->isGranted('ROLE_ADMIN') || $this->isGranted('ROLE_ETUDIANT')) {
             $feedbacks = $feedbackRepository->findAll();
-        } elseif ($this->isGranted('ROLE_PRESIDENT')) {
-            // President sees feedbacks only for events belonging to their clubs
-            $clubs = $clubRepository->findBy(['president' => $user]);
-            $feedbacks = $clubs ? $feedbackRepository->findByClubs($clubs) : [];
-        } elseif ($this->isGranted('ROLE_RESPONSABLE')) {
-            // Responsable sees feedbacks for events of clubs they are a member of
-            $memberships = $clubMemberRepository->findBy(['user' => $user]);
-            $clubs = array_map(fn($m) => $m->getClub(), $memberships);
+        } elseif ($this->isGranted('ROLE_PRESIDENT') || $this->isGranted('ROLE_RESPONSABLE')) {
+            // Managers (President or Responsable) see feedbacks for events belonging to their managed clubs
+            $clubs = $clubRepository->findManagedClubs($user);
             $feedbacks = $clubs ? $feedbackRepository->findByClubs($clubs) : [];
         } else {
             $feedbacks = [];
@@ -145,8 +140,7 @@ final class FeedbackController extends AbstractController
     /**
      * Check whether the current user is allowed to read a specific feedback.
      * - Admin & Etudiant: always yes
-     * - President: only if the event's club belongs to them
-     * - Responsable: only if they are a member of the event's club
+     * - Manager (President or Responsable): only if they manage the event's club
      */
     private function canReadFeedback(
         Feedback $feedback,
@@ -163,14 +157,8 @@ final class FeedbackController extends AbstractController
             return false;
         }
 
-        if ($this->isGranted('ROLE_PRESIDENT')) {
-            $presidentClubs = $clubRepository->findBy(['president' => $user]);
-            return in_array($eventClub, $presidentClubs, true);
-        }
-
-        if ($this->isGranted('ROLE_RESPONSABLE')) {
-            $membership = $clubMemberRepository->findOneBy(['user' => $user, 'club' => $eventClub]);
-            return $membership !== null;
+        if ($this->isGranted('ROLE_PRESIDENT') || $this->isGranted('ROLE_RESPONSABLE')) {
+            return $clubRepository->isManager($eventClub, $user);
         }
 
         return false;

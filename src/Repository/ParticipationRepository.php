@@ -21,15 +21,18 @@ class ParticipationRepository extends ServiceEntityRepository
     /**
      * @return Participation[]
      */
-    public function findReceivedByPresident(User $president): array
+    public function findReceivedByManager(User $manager): array
     {
         return $this->createQueryBuilder('p')
             ->join('p.event', 'e')
             ->join('e.club', 'c')
+            ->leftJoin('App\Entity\ClubMember', 'cm', 'WITH', 'cm.club = c AND cm.user = :manager AND cm.role = :roleResp')
             ->addSelect('e', 'c', 'u')
             ->leftJoin('p.user', 'u')
-            ->andWhere('c.president = :president')
-            ->setParameter('president', $president)
+            ->where('c.president = :manager')
+            ->orWhere('cm.id IS NOT NULL')
+            ->setParameter('manager', $manager)
+            ->setParameter('roleResp', 'Responsable')
             ->orderBy('p.dateParticipation', 'DESC')
             ->getQuery()
             ->getResult()

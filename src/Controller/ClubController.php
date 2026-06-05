@@ -28,7 +28,8 @@ class ClubController extends AbstractController
         private ClubMemberRepository $clubMemberRepository,
         private UserRepository $userRepository,
         private EntityManagerInterface $em
-    ) {}
+    ) {
+    }
 
     // LIST (public)
     #[Route('', name: 'club_index')]
@@ -39,10 +40,17 @@ class ClubController extends AbstractController
 
         foreach ($allClubs as $club) {
             if ($this->isGranted('ROLE_ADMIN')) {
+                // Admin voit tous les clubs
                 $clubs[] = $club;
             } elseif ($club->getStatus() === 'Actif') {
+                // Tout le monde voit les clubs actifs
                 $clubs[] = $club;
-            } elseif ($this->getUser() && $club->getPresident() === $this->getUser()) {
+            } elseif (
+                $this->getUser()
+                && $club->getPresident() === $this->getUser()
+                && in_array($club->getStatus(), ['En attente', 'Inactif'], true)
+            ) {
+                // Le président voit son propre club en attente ou suspendu (pas refusé)
                 $clubs[] = $club;
             }
         }
@@ -76,16 +84,40 @@ class ClubController extends AbstractController
         ]);
     }
 
-    // ─── SUSPENDRE UN CLUB (Admin) ─────────────────────────────────────────────
+    // ─── SUSPENDRE UN CLUB (Admin ou Président) ────────────────────────────────
     #[Route('/{id}/suspend', name: 'club_suspend', methods: ['POST'])]
-    #[IsGranted('ROLE_ADMIN')]
+    #[IsGranted('ROLE_RESPONSABLE')]
     public function suspend(Club $club): Response
     {
+        /** @var \App\Entity\User|null $user */
+        $user = $this->getUser();
+        $isAdmin = $this->isGranted('ROLE_ADMIN');
+        
+        $isManager = false;
+        if ($user) {
+            $clubRepo = $this->em->getRepository(Club::class);
+            $isManager = $clubRepo->isManager($club, $user);
+        }
+
+        if (!$isAdmin && !$isManager) {
+            throw $this->createAccessDeniedException('Vous n\'êtes pas autorisé à suspendre ce club.');
+        }
+
+        if ($club->getStatus() !== 'Actif') {
+            $this->addFlash('warning', 'Seul un club actif peut être suspendu.');
+            return $this->redirectToRoute(
+                $isAdmin ? 'admin_club_index' : 'club_show',
+                $isAdmin ? [] : ['id' => $club->getId()],
+                Response::HTTP_SEE_OTHER
+            );
+        }
+
         $club->setStatus('Inactif');
 
         if ($club->getPresident()) {
+            $who = $isAdmin ? 'l\'administrateur' : 'le président';
             $notif = new Notification();
-            $notif->setMessage('Votre club « ' . $club->getNom() . ' » a été suspendu par l\'administrateur.');
+            $notif->setMessage('Votre club « ' . $club->getNom() . ' » a été suspendu par ' . $who . '.');
             $notif->setIsRead(false);
             $notif->setCreatedAt(new \DateTimeImmutable());
             $notif->setUser($club->getPresident());
@@ -95,7 +127,11 @@ class ClubController extends AbstractController
         $this->em->flush();
 
         $this->addFlash('warning', 'Le club « ' . $club->getNom() . ' » a été suspendu.');
-        return $this->redirectToRoute('admin_club_index', [], Response::HTTP_SEE_OTHER);
+
+        if ($isAdmin) {
+            return $this->redirectToRoute('admin_club_index', [], Response::HTTP_SEE_OTHER);
+        }
+        return $this->redirectToRoute('club_index', [], Response::HTTP_SEE_OTHER);
     }
 
     // SHOW NEW FORM
@@ -115,7 +151,7 @@ class ClubController extends AbstractController
 
             if ($logoFile) {
                 $safeName = $slugger->slug(pathinfo($logoFile->getClientOriginalName(), PATHINFO_FILENAME));
-                $newFilename = $safeName.'-'.uniqid().'.'.$logoFile->guessExtension();
+                $newFilename = $safeName . '-' . uniqid() . '.' . $logoFile->guessExtension();
 
                 $logoFile->move(
                     $this->getParameter('logos_directory'),
@@ -144,11 +180,22 @@ class ClubController extends AbstractController
     #[Route('/{id}', name: 'club_show', methods: ['GET'])]
     public function show(Club $club): Response
     {
-        if ($club->getStatus() !== 'Actif') {
-            if (!$this->isGranted('ROLE_ADMIN') && (!$this->getUser() || $club->getPresident() !== $this->getUser())) {
-                throw $this->createAccessDeniedException('Ce club n\'est pas actif.');
-            }
+        $user = $this->getUser();
+        $isAdmin = $this->isGranted('ROLE_ADMIN');
+        
+        $clubRepo = $this->em->getRepository(Club::class);
+        $isManager = $user && $clubRepo->isManager($club, $user);
+
+        // Club refusé : admin uniquement
+        if ($club->getStatus() === 'Refusé' && !$isAdmin) {
+            throw $this->createAccessDeniedException('Ce club a été refusé.');
         }
+
+        // Club en attente ou suspendu : admin ou manager uniquement
+        if (in_array($club->getStatus(), ['En attente', 'Inactif'], true) && !$isAdmin && !$isManager) {
+            throw $this->createAccessDeniedException('Ce club n\'est pas accessible.');
+        }
+
 
         $isMember = false;
         if ($this->getUser()) {
@@ -159,10 +206,73 @@ class ClubController extends AbstractController
             $isMember = $existing !== null;
         }
 
+        $availableResponsables = [];
+        $currentResponsables = [];
+        if ($user && $club->getPresident() === $user) { // Seul le président (pas les autres responsables) peut ajouter des responsables
+            $allResponsables = $this->userRepository->findByRole('ROLE_RESPONSABLE');
+            $currentMembers = $this->clubMemberRepository->findBy(['club' => $club]);
+            
+            foreach ($currentMembers as $member) {
+                if ($member->getRole() === 'Responsable') {
+                    $currentResponsables[] = $member->getUser();
+                }
+            }
+
+            $memberUserIds = array_map(fn($m) => $m->getUser()->getId(), $currentMembers);
+            if ($club->getPresident()) {
+                $memberUserIds[] = $club->getPresident()->getId();
+            }
+
+            foreach ($allResponsables as $resp) {
+                if (!in_array($resp->getId(), $memberUserIds, true)) {
+                    $availableResponsables[] = $resp;
+                }
+            }
+        }
+
         return $this->render('clubs/show.html.twig', [
-            'club'     => $club,
+            'club' => $club,
             'isMember' => $isMember,
+            'availableResponsables' => $availableResponsables,
+            'currentResponsables' => $currentResponsables,
+            'isManager' => $isManager,
         ]);
+    }
+
+    // ─── AJOUTER UN RESPONSABLE (Président) ──────────────────────────────────
+    #[Route('/{id}/add-responsable', name: 'club_add_responsable', methods: ['POST'])]
+    #[IsGranted('ROLE_RESPONSABLE')]
+    public function addResponsable(Request $request, Club $club): Response
+    {
+        if ($this->getUser() !== $club->getPresident() && !$this->isGranted('ROLE_ADMIN')) {
+            throw $this->createAccessDeniedException('Seul le président peut ajouter un responsable.');
+        }
+
+        $userId = $request->request->get('user_id');
+        if ($userId && $this->isCsrfTokenValid('add_resp' . $club->getId(), (string)$request->request->get('_token'))) {
+            $userToAdd = $this->userRepository->find($userId);
+            if ($userToAdd && in_array('ROLE_RESPONSABLE', $userToAdd->getRoles(), true)) {
+                $existing = $this->clubMemberRepository->findOneBy(['club' => $club, 'user' => $userToAdd]);
+                if (!$existing) {
+                    $member = new ClubMember();
+                    $member->setClub($club);
+                    $member->setUser($userToAdd);
+                    $member->setRole('Responsable');
+                    $member->setJoinedAt(new \DateTimeImmutable());
+                    
+                    $this->em->persist($member);
+                    $this->em->flush();
+                    
+                    $this->addFlash('success', 'Le responsable a été ajouté au club avec succès.');
+                } else {
+                    $this->addFlash('warning', 'Cet utilisateur est déjà membre du club.');
+                }
+            } else {
+                $this->addFlash('danger', 'Utilisateur invalide ou n\'a pas le rôle responsable.');
+            }
+        }
+
+        return $this->redirectToRoute('club_show', ['id' => $club->getId()]);
     }
 
     // ─── POSTULER A UN CLUB ──────────────────────────────────────────
@@ -172,7 +282,7 @@ class ClubController extends AbstractController
     {
         // Chercher s'il y a un recrutement pour ce club
         $recruitment = $this->em->getRepository(\App\Entity\Recruitment::class)->findOneBy(['club' => $club], ['id' => 'DESC']);
-        
+
         if ($recruitment) {
             return $this->redirectToRoute('app_recruitment_show', ['id' => $recruitment->getId()]);
         }
@@ -186,12 +296,13 @@ class ClubController extends AbstractController
     #[IsGranted('ROLE_RESPONSABLE')]
     public function requestActivation(Club $club): Response
     {
-        /** @var \App\Entity\User $president */
-        $president = $this->getUser();
+        /** @var \App\Entity\User $manager */
+        $manager = $this->getUser();
+        $clubRepo = $this->em->getRepository(Club::class);
 
-        // Seul le président du club peut demander l'activation
-        if ($club->getPresident() !== $president) {
-            $this->addFlash('danger', 'Vous n\'êtes pas le président de ce club.');
+        // Les managers peuvent demander l'activation
+        if (!$clubRepo->isManager($club, $manager)) {
+            $this->addFlash('danger', 'Vous n\'êtes pas autorisé à gérer ce club.');
             return $this->redirectToRoute('club_show', ['id' => $club->getId()]);
         }
 
@@ -207,7 +318,7 @@ class ClubController extends AbstractController
         foreach ($admins as $admin) {
             $notif = new Notification();
             $notif->setMessage(
-                'Le président ' . $president->getNom() . ' demande l\'activation du club « ' . $club->getNom() . ' » (ID: ' . $club->getId() . ').'
+                'Le responsable ' . $manager->getNom() . ' demande l\'activation du club « ' . $club->getNom() . ' » (ID: ' . $club->getId() . ').'
             );
             $notif->setIsRead(false);
             $notif->setCreatedAt(new \DateTimeImmutable());
@@ -273,10 +384,13 @@ class ClubController extends AbstractController
     // EDIT CLUB
     #[Route('/{id}/edit', name: 'club_edit', methods: ['GET', 'POST'])]
     #[IsGranted('ROLE_RESPONSABLE')]
-    public function edit(Request $request, Club $club, SluggerInterface $slugger): Response
+    public function edit(Request $request, Club $club, \Symfony\Component\String\Slugger\SluggerInterface $slugger): Response
     {
         $mode = 'responsable';
-        if ($this->getUser() === $club->getPresident()) {
+        $clubRepo = $this->em->getRepository(Club::class);
+        $user = $this->getUser();
+        
+        if ($user && $clubRepo->isManager($club, $user)) {
             $mode = 'president';
         }
         if ($this->isGranted('ROLE_ADMIN')) {
@@ -294,7 +408,7 @@ class ClubController extends AbstractController
 
             if ($logoFile) {
                 $safeName = $slugger->slug(pathinfo($logoFile->getClientOriginalName(), PATHINFO_FILENAME));
-                $newFilename = $safeName.'-'.uniqid().'.'.$logoFile->guessExtension();
+                $newFilename = $safeName . '-' . uniqid() . '.' . $logoFile->guessExtension();
 
                 $logoFile->move(
                     $this->getParameter('logos_directory'),
@@ -324,7 +438,7 @@ class ClubController extends AbstractController
         $user = $this->getUser();
 
         // Seul l'admin ou le président du club peut supprimer
-        $isAdmin     = $this->isGranted('ROLE_ADMIN');
+        $isAdmin = $this->isGranted('ROLE_ADMIN');
         $isPresident = $user && $club->getPresident() === $user;
 
         if (!$isAdmin && !$isPresident) {

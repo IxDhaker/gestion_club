@@ -23,17 +23,18 @@ class EventController extends AbstractController
     ) {}
 
     #[Route('', name: 'event_index', methods: ['GET'])]
-    public function index(): Response
+    public function index(ClubRepository $clubRepository): Response
     {
         $allEvents = $this->eventRepository->findBy([], ['dateEvent' => 'ASC']);
         $events = [];
+        $user = $this->getUser();
 
         foreach ($allEvents as $event) {
             if ($this->isGranted('ROLE_ADMIN')) {
                 $events[] = $event;
             } elseif ($event->getStatus() === 'Validé') {
                 $events[] = $event;
-            } elseif ($this->getUser() && $event->getClub() && $event->getClub()->getPresident() === $this->getUser()) {
+            } elseif ($user && $event->getClub() && $clubRepository->isManager($event->getClub(), $user)) {
                 $events[] = $event;
             }
         }
@@ -53,13 +54,15 @@ class EventController extends AbstractController
     }
 
     #[Route('/new', name: 'event_new', methods: ['GET', 'POST'])]
-    #[IsGranted('ROLE_PRESIDENT')]
+    #[IsGranted('ROLE_RESPONSABLE')]
     public function new(Request $request, ClubRepository $clubRepository, EntityManagerInterface $em): Response
     {
-        $presidentClubs = $clubRepository->findBy(['president' => $this->getUser()]);
+        /** @var \App\Entity\User $user */
+        $user = $this->getUser();
+        $managedClubs = $clubRepository->findManagedClubs($user);
 
-        if ($presidentClubs === []) {
-            $this->addFlash('warning', 'Vous devez avoir un club pour creer un evenement.');
+        if ($managedClubs === []) {
+            $this->addFlash('warning', 'Vous devez gérer un club pour creer un evenement.');
 
             return $this->redirectToRoute('club_index');
         }
@@ -67,18 +70,18 @@ class EventController extends AbstractController
         $event = new Event();
         $event->setStatus('En attente');
 
-        if (count($presidentClubs) === 1) {
-            $event->setClub($presidentClubs[0]);
+        if (count($managedClubs) === 1) {
+            $event->setClub($managedClubs[0]);
         }
 
         $form = $this->createForm(EventType::class, $event, [
-            'club_choices' => $presidentClubs,
+            'club_choices' => $managedClubs,
             'submit_label' => 'Creer l\'evenement',
         ]);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            if (!in_array($event->getClub(), $presidentClubs, true)) {
+            if (!in_array($event->getClub(), $managedClubs, true)) {
                 throw $this->createAccessDeniedException('Vous ne pouvez pas creer un evenement pour ce club.');
             }
 
@@ -98,10 +101,11 @@ class EventController extends AbstractController
     }
 
     #[Route('/{id}', name: 'event_show', methods: ['GET'], requirements: ['id' => '\d+'])]
-    public function show(Event $event): Response
+    public function show(Event $event, ClubRepository $clubRepository): Response
     {
+        $user = $this->getUser();
         if ($event->getStatus() !== 'Validé') {
-            if (!$this->isGranted('ROLE_ADMIN') && (!$this->getUser() || ($event->getClub() && $event->getClub()->getPresident() !== $this->getUser()))) {
+            if (!$this->isGranted('ROLE_ADMIN') && (!$user || ($event->getClub() && !$clubRepository->isManager($event->getClub(), $user)))) {
                 throw $this->createAccessDeniedException('Cet événement n\'est pas encore validé.');
             }
         }
@@ -136,23 +140,25 @@ class EventController extends AbstractController
     }
 
     #[Route('/{id}/edit', name: 'event_edit', methods: ['GET', 'POST'], requirements: ['id' => '\d+'])]
-    #[IsGranted('ROLE_PRESIDENT')]
+    #[IsGranted('ROLE_RESPONSABLE')]
     public function edit(Event $event, Request $request, ClubRepository $clubRepository, EntityManagerInterface $em): Response
     {
-        $presidentClubs = $clubRepository->findBy(['president' => $this->getUser()]);
+        /** @var \App\Entity\User $user */
+        $user = $this->getUser();
+        $managedClubs = $clubRepository->findManagedClubs($user);
 
-        if (!in_array($event->getClub(), $presidentClubs, true)) {
+        if (!in_array($event->getClub(), $managedClubs, true)) {
             throw $this->createAccessDeniedException('Vous ne pouvez modifier que les evenements de vos clubs.');
         }
 
         $form = $this->createForm(EventType::class, $event, [
-            'club_choices' => $presidentClubs,
+            'club_choices' => $managedClubs,
             'submit_label' => 'Modifier l\'evenement',
         ]);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            if (!in_array($event->getClub(), $presidentClubs, true)) {
+            if (!in_array($event->getClub(), $managedClubs, true)) {
                 throw $this->createAccessDeniedException('Vous ne pouvez pas transferer cet evenement vers ce club.');
             }
 

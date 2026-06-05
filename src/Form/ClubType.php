@@ -41,12 +41,18 @@ class ClubType extends AbstractType
                 ->add('domaine', TextType::class, [
                     'label' => 'Domaine',
                     'attr' => ['class' => 'form-control']
-                ])
-                ->add('status', TextType::class, [
-                    'label' => 'Statut',
-                    'attr' => ['class' => 'form-control']
                 ]);
+            // Note: 'status' est géré par le controller (défaut 'En attente'), pas par le formulaire
         }
+
+        if ($mode === 'all') {
+            // Seul l'admin peut modifier le statut via le formulaire d'édition
+            $builder->add('status', TextType::class, [
+                'label' => 'Statut',
+                'attr' => ['class' => 'form-control']
+            ]);
+        }
+
     }
 
     public function configureOptions(OptionsResolver $resolver): void

@@ -24,15 +24,16 @@ class ParticipationController extends AbstractController
     public function __construct(
         private ParticipationRepository $participationRepository,
         private EntityManagerInterface  $em,
+        private \App\Repository\ClubRepository $clubRepository,
     ) {}
 
     #[Route('/president/participations', name: 'president_participations', methods: ['GET'])]
-    #[IsGranted('ROLE_PRESIDENT')]
+    #[IsGranted('ROLE_RESPONSABLE')]
     public function receivedParticipations(): Response
     {
-        /** @var User $president */
-        $president = $this->getUser();
-        $participations = $this->participationRepository->findReceivedByPresident($president);
+        /** @var User $manager */
+        $manager = $this->getUser();
+        $participations = $this->participationRepository->findReceivedByManager($manager);
 
         $stats = [
             self::STATUS_PENDING => 0,
@@ -98,10 +99,10 @@ class ParticipationController extends AbstractController
         $participation->setEvent($event);
         $participation->setUser($user);
         $participation->setDateParticipation(new \DateTime());
-        $participation->setStatus($this->requiresPresidentApproval($event, $user) ? self::STATUS_PENDING : self::STATUS_ACCEPTED);
+        $participation->setStatus($this->requiresManagerApproval($event, $user) ? self::STATUS_PENDING : self::STATUS_ACCEPTED);
 
         $this->em->persist($participation);
-        $this->notifyPresident($event, $user);
+        $this->notifyPresident($event, $user); // Notifying the president is sufficient for now
         $this->em->flush();
 
         $message = $participation->getStatus() === self::STATUS_PENDING
@@ -113,10 +114,10 @@ class ParticipationController extends AbstractController
     }
 
     #[Route('/participations/{id}/accept', name: 'participation_accept', methods: ['POST'], requirements: ['id' => '\d+'])]
-    #[IsGranted('ROLE_PRESIDENT')]
+    #[IsGranted('ROLE_RESPONSABLE')]
     public function accept(Participation $participation, Request $request): Response
     {
-        $this->denyAccessUnlessPresidentOwnsParticipation($participation);
+        $this->denyAccessUnlessManagerOwnsParticipation($participation);
 
         if (!$this->isCsrfTokenValid('accept_participation_' . $participation->getId(), (string) $request->request->get('_token'))) {
             $this->addFlash('danger', 'Token CSRF invalide.');
@@ -132,10 +133,10 @@ class ParticipationController extends AbstractController
     }
 
     #[Route('/participations/{id}/refuse', name: 'participation_refuse', methods: ['POST'], requirements: ['id' => '\d+'])]
-    #[IsGranted('ROLE_PRESIDENT')]
+    #[IsGranted('ROLE_RESPONSABLE')]
     public function refuse(Participation $participation, Request $request): Response
     {
-        $this->denyAccessUnlessPresidentOwnsParticipation($participation);
+        $this->denyAccessUnlessManagerOwnsParticipation($participation);
 
         if (!$this->isCsrfTokenValid('refuse_participation_' . $participation->getId(), (string) $request->request->get('_token'))) {
             $this->addFlash('danger', 'Token CSRF invalide.');
@@ -190,13 +191,13 @@ class ParticipationController extends AbstractController
         ]);
     }
 
-    private function requiresPresidentApproval(Event $event, mixed $user): bool
+    private function requiresManagerApproval(Event $event, mixed $user): bool
     {
-        $president = $event->getClub()?->getPresident();
+        if (!$user instanceof User || !$event->getClub()) {
+            return true;
+        }
 
-        return $president instanceof User
-            && $user instanceof User
-            && $president->getId() !== $user->getId();
+        return !$this->clubRepository->isManager($event->getClub(), $user);
     }
 
     private function notifyPresident(Event $event, mixed $student): void
@@ -231,12 +232,12 @@ class ParticipationController extends AbstractController
         $this->em->persist($notification);
     }
 
-    private function denyAccessUnlessPresidentOwnsParticipation(Participation $participation): void
+    private function denyAccessUnlessManagerOwnsParticipation(Participation $participation): void
     {
-        $president = $participation->getEvent()?->getClub()?->getPresident();
+        $club = $participation->getEvent()?->getClub();
         $currentUser = $this->getUser();
 
-        if (!$president instanceof User || !$currentUser instanceof User || $president->getId() !== $currentUser->getId()) {
+        if (!$club || !$currentUser instanceof User || !$this->clubRepository->isManager($club, $currentUser)) {
             throw $this->createAccessDeniedException('Vous ne pouvez gerer que les participations de vos evenements.');
         }
     }

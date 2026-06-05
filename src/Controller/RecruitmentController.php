@@ -37,7 +37,8 @@ final class RecruitmentController extends AbstractController
     {
         /** @var \App\Entity\User $currentUser */
         $currentUser = $this->getUser();
-        $userClub = $clubRepository->findOneBy(['president' => $currentUser]);
+        $managedClubs = $clubRepository->findManagedClubs($currentUser);
+        $userClub = count($managedClubs) > 0 ? $managedClubs[0] : null;
 
         $recruitment = new Recruitment();
         $form = $this->createForm(RecruitmentType::class, $recruitment);
@@ -80,8 +81,12 @@ final class RecruitmentController extends AbstractController
 
     #[Route('/{id}/edit', name: 'app_recruitment_edit', methods: ['GET', 'POST'])]
     #[IsGranted('ROLE_RESPONSABLE')]
-    public function edit(Request $request, Recruitment $recruitment, EntityManagerInterface $entityManager): Response
+    public function edit(Request $request, Recruitment $recruitment, EntityManagerInterface $entityManager, ClubRepository $clubRepository): Response
     {
+        if (!$clubRepository->isManager($recruitment->getClub(), $this->getUser()) && !$this->isGranted('ROLE_ADMIN')) {
+            throw $this->createAccessDeniedException('Vous ne gérez pas ce club.');
+        }
+
         $form = $this->createForm(RecruitmentType::class, $recruitment);
         $form->handleRequest($request);
 
@@ -99,8 +104,12 @@ final class RecruitmentController extends AbstractController
 
     #[Route('/{id}', name: 'app_recruitment_delete', methods: ['POST'])]
     #[IsGranted('ROLE_RESPONSABLE')]
-    public function delete(Request $request, Recruitment $recruitment, EntityManagerInterface $entityManager): Response
+    public function delete(Request $request, Recruitment $recruitment, EntityManagerInterface $entityManager, ClubRepository $clubRepository): Response
     {
+        if (!$clubRepository->isManager($recruitment->getClub(), $this->getUser()) && !$this->isGranted('ROLE_ADMIN')) {
+            throw $this->createAccessDeniedException('Vous ne gérez pas ce club.');
+        }
+
         if ($this->isCsrfTokenValid('delete'.$recruitment->getId(), $request->getPayload()->getString('_token'))) {
             $entityManager->remove($recruitment);
             $entityManager->flush();
