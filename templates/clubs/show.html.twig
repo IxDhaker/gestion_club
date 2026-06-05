@@ -143,8 +143,8 @@
                         </a>
                     {% endif %}
 
-                    {# Delete #}
-                    {% if is_granted('ROLE_ADMIN') %}
+                    {# Delete — visible for admin OR the club's president #}
+                    {% if is_granted('ROLE_ADMIN') or (app.user is not null and club.president is not null and club.president == app.user) %}
                         <form method="post" action="{{ path('club_delete', {'id': club.id}) }}" onsubmit="return confirm('Supprimer ce club ?');" style="margin:0;">
                             <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ club.id) }}">
                             <button style="background:#fee2e2; color:#991b1b; border:none; border-radius:30px; padding:12px 22px; font-weight:700; cursor:pointer; font-size:0.88rem;">

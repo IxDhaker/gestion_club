@@ -4,7 +4,10 @@ namespace App\Controller;
 
 use App\Entity\Club;
 use App\Entity\ClubMember;
+use App\Entity\Event;
 use App\Entity\Notification;
+use App\Entity\Participation;
+use App\Entity\Recruitment;
 use App\Form\ClubType;
 use App\Repository\ClubRepository;
 use App\Repository\ClubMemberRepository;
@@ -314,14 +317,53 @@ class ClubController extends AbstractController
 
     // DELETE CLUB
     #[Route('/{id}', name: 'club_delete', methods: ['POST'])]
-    #[IsGranted('ROLE_ADMIN')]
+    #[IsGranted('ROLE_RESPONSABLE')]
     public function delete(Request $request, Club $club): Response
     {
+        /** @var \App\Entity\User|null $user */
+        $user = $this->getUser();
+
+        // Seul l'admin ou le président du club peut supprimer
+        $isAdmin     = $this->isGranted('ROLE_ADMIN');
+        $isPresident = $user && $club->getPresident() === $user;
+
+        if (!$isAdmin && !$isPresident) {
+            throw $this->createAccessDeniedException('Vous n\'êtes pas autorisé à supprimer ce club.');
+        }
+
         if ($this->isCsrfTokenValid('delete' . $club->getId(), (string) $request->request->get('_token'))) {
+            // 1. Supprimer les participations liées aux événements du club
+            $events = $this->em->getRepository(Event::class)->findBy(['club' => $club]);
+            foreach ($events as $event) {
+                $participations = $this->em->getRepository(Participation::class)->findBy(['event' => $event]);
+                foreach ($participations as $participation) {
+                    $this->em->remove($participation);
+                }
+                $this->em->remove($event);
+            }
+
+            // 2. Supprimer les recrutements (les candidatures sont en CASCADE côté DB)
+            $recruitments = $this->em->getRepository(Recruitment::class)->findBy(['club' => $club]);
+            foreach ($recruitments as $recruitment) {
+                $this->em->remove($recruitment);
+            }
+
+            // 3. Supprimer les membres du club
+            $members = $this->em->getRepository(ClubMember::class)->findBy(['club' => $club]);
+            foreach ($members as $member) {
+                $this->em->remove($member);
+            }
+
+            // 4. Supprimer le club lui-même
             $this->em->remove($club);
             $this->em->flush();
         }
 
-        return $this->redirectToRoute('club_index');
+        // Admin redirigé vers la liste admin, président vers la liste publique
+        if ($isAdmin) {
+            return $this->redirectToRoute('admin_club_index', [], Response::HTTP_SEE_OTHER);
+        }
+
+        return $this->redirectToRoute('club_index', [], Response::HTTP_SEE_OTHER);
     }
 }
