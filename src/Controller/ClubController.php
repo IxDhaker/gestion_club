@@ -147,7 +147,7 @@ class ClubController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
 
             /** @var \Symfony\Component\HttpFoundation\File\UploadedFile|null $logoFile */
-            $logoFile = $form->get('logoFile')->getData();
+            $logoFile = $form->has('logoFile') ? $form->get('logoFile')->getData() : null;
 
             if ($logoFile) {
                 $safeName = $slugger->slug(pathinfo($logoFile->getClientOriginalName(), PATHINFO_FILENAME));
@@ -404,7 +404,7 @@ class ClubController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             /** @var \Symfony\Component\HttpFoundation\File\UploadedFile|null $logoFile */
-            $logoFile = $form->get('logoFile')->getData();
+            $logoFile = $form->has('logoFile') ? $form->get('logoFile')->getData() : null;
 
             if ($logoFile) {
                 $safeName = $slugger->slug(pathinfo($logoFile->getClientOriginalName(), PATHINFO_FILENAME));

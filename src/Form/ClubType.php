@@ -10,6 +10,7 @@ use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Validator\Constraints\File;
 
 class ClubType extends AbstractType
 {
@@ -27,7 +28,17 @@ class ClubType extends AbstractType
                     'label' => 'Logo (fichier PNG, JPG)',
                     'required' => false,
                     'mapped' => false,
-                    'attr' => ['class' => 'form-control']
+                    'attr' => ['class' => 'form-control'],
+                    'constraints' => [
+                        new File([
+                            'maxSize' => '2M',
+                            'mimeTypes' => [
+                                'image/jpeg',
+                                'image/png',
+                            ],
+                            'mimeTypesMessage' => 'Veuillez uploader un logo valide (JPG ou PNG)',
+                        ])
+                    ],
                 ]);
         }
 

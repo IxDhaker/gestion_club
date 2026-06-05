@@ -7,6 +7,7 @@ use App\Entity\Event;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
+use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
@@ -42,6 +43,12 @@ class EventType extends AbstractType
                 'label' => 'Club organisateur',
                 'placeholder' => 'Choisir un club',
                 'attr' => ['class' => 'form-select']
+            ])
+            ->add('photoFile', FileType::class, [
+                'label' => 'Photo de l\'événement',
+                'mapped' => false,
+                'required' => false,
+                'attr' => ['class' => 'form-control']
             ])
             ->add('submit', SubmitType::class, [
                 'label' => $options['submit_label'],

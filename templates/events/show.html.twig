@@ -137,6 +137,13 @@
         <hr style="border-color:#f4f6fb; margin:1.75rem 0;">
         <p style="color:#555; line-height:1.8; font-size:.96rem;">{{ event.description }}</p>
         {% endif %}
+
+        {% if event.photo %}
+        <hr style="border-color:#f4f6fb; margin:1.75rem 0;">
+        <div style="text-align: center;">
+            <img src="{{ asset('events/' ~ event.photo) }}" alt="{{ event.titre }}" style="max-width: 100%; max-height: 400px; border-radius: 12px; object-fit: cover; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+        </div>
+        {% endif %}
     </div>
 
     {% if event.status is defined and event.status %}
