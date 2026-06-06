@@ -1,5 +1,7 @@
-
 ###> symfony/framework-bundle ###
+/.env
+/.env.dev
+/.env.test
 /.env.local
 /.env.local.php
 /.env.*.local
@@ -12,9 +14,75 @@
 ###> phpunit/phpunit ###
 /phpunit.xml
 /.phpunit.cache/
+/.phpunit.result.cache
 ###< phpunit/phpunit ###
 
 ###> symfony/asset-mapper ###
 /public/assets/
 /assets/vendor/
 ###< symfony/asset-mapper ###
+
+###> composer ###
+/composer.phar
+###< composer ###
+
+###> doctrine/doctrine-migrations-bundle ###
+# Keep migrations in git — do NOT ignore /migrations/
+###< doctrine/doctrine-migrations-bundle ###
+
+###> Node / npm / yarn ###
+node_modules/
+npm-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+###< Node / npm / yarn ###
+
+###> IDE — VSCode ###
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+###< IDE — VSCode ###
+
+###> IDE — PhpStorm / IntelliJ ###
+.idea/
+*.iml
+###< IDE — PhpStorm / IntelliJ ###
+
+###> IDE — Sublime Text ###
+*.sublime-project
+*.sublime-workspace
+###< IDE — Sublime Text ###
+
+###> OS — Windows ###
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+###< OS — Windows ###
+
+###> OS — macOS ###
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+###< OS — macOS ###
+
+###> OS — Linux ###
+*~
+.fuse_hidden*
+.nfs*
+###< OS — Linux ###
+
+###> PHP ###
+*.log
+*.cache
+###< PHP ###
+
+###> Uploads / user-generated content ###
+/public/uploads/
+###< Uploads / user-generated content ###
+
+###> Misc ###
+check_tables.php
+###< Misc ###
